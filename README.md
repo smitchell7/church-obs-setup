@@ -41,4 +41,6 @@ HX2/HX3 cameras.
 - The obs-ptz Flatpak bundle is in `vendor/` (built from <https://github.com/smitchell7/obs-ptz>,
   a fork of <https://github.com/glikely/obs-ptz>, GPL-2.0; the source is in that repo). To use a
   different build, run `sudo PTZ_BUNDLE=/path/to/file.flatpak ./setup-obs-flatpak.sh`.
+- It asks whether to add OBS to the GNOME dock (only offered on machines set up with the church
+  autoinstall). Answer up front with `--pin-dock` or `--no-pin-dock`.
 - Without the HX libraries, HX cameras show black video with "NDI video decoder not found".

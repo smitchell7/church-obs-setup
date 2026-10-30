@@ -4,7 +4,9 @@
 #   - obs-ptz (PTZ Controls) as a Flatpak extension, from the bundle in vendor/
 #     (built by https://github.com/smitchell7/obs-ptz, release v0.0.1-pre1)
 #
-# Usage:  sudo ./setup-obs-flatpak.sh
+# Usage:  sudo ./setup-obs-flatpak.sh [--pin-dock | --no-pin-dock]
+#   --pin-dock / --no-pin-dock  answer the "add OBS to the dock?" question up front
+#                               (without either, it asks when run in a terminal)
 # The user to configure is whoever ran sudo; override with TARGET_USER=name.
 # PTZ_BUNDLE=/path/to/file.flatpak uses a different obs-ptz bundle than vendor/.
 set -euo pipefail
@@ -17,6 +19,16 @@ PTZ_ASSET='obs-ptz-*-flatpak-x86_64.flatpak'
 # "NDI video decoder not found". We borrow stock FFmpeg 7.1 from the 25.08 runtime.
 FFMPEG_RUNTIME_BRANCH=25.08
 CODECS_BRANCH=25.08-extra
+
+PIN_DOCK=ask
+DOCK_SCHEMA_FILE=${DOCK_SCHEMA_FILE:-/usr/share/glib-2.0/schemas/50_stake_defaults.gschema.override}
+for arg in "$@"; do
+  case "$arg" in
+    --pin-dock) PIN_DOCK=yes ;;
+    --no-pin-dock) PIN_DOCK=no ;;
+    *) echo "Unknown option: $arg" >&2; exit 1 ;;
+  esac
+done
 
 if [ "$EUID" -ne 0 ]; then
   echo "Please run as root: sudo $0" >&2
@@ -86,11 +98,18 @@ if [ -n "$MISSING" ]; then
   echo "$MISSING" >&2
 fi
 
-SCHEMA_FILE=/usr/share/glib-2.0/schemas/50_stake_defaults.gschema.override
-if [ -f "$SCHEMA_FILE" ] && ! grep -q 'com.obsproject.Studio.desktop' "$SCHEMA_FILE"; then
-  echo "==> Adding OBS to the GNOME dock favourites"
-  sed -i "s/'org.gnome.Terminal.desktop'\]/'com.obsproject.Studio.desktop', 'org.gnome.Terminal.desktop']/" "$SCHEMA_FILE"
-  glib-compile-schemas /usr/share/glib-2.0/schemas/
+# Optional: pin OBS to the GNOME dock. Only possible where a schema override already
+# sets favorite-apps (the church autoinstall creates one).
+if [ -f "$DOCK_SCHEMA_FILE" ] && ! grep -q 'com.obsproject.Studio.desktop' "$DOCK_SCHEMA_FILE"; then
+  if [ "$PIN_DOCK" = ask ] && [ -t 0 ]; then
+    read -r -p "Add OBS to the GNOME dock favourites for new sessions? [y/N] " reply
+    case "$reply" in [yY]*) PIN_DOCK=yes ;; *) PIN_DOCK=no ;; esac
+  fi
+  if [ "$PIN_DOCK" = yes ]; then
+    echo "==> Adding OBS to the GNOME dock favourites"
+    sed -i "s/'org.gnome.Terminal.desktop'\\]/'com.obsproject.Studio.desktop', 'org.gnome.Terminal.desktop']/" "$DOCK_SCHEMA_FILE"
+    glib-compile-schemas /usr/share/glib-2.0/schemas/
+  fi
 fi
 
 echo "==> Done. Start OBS from the app menu or: flatpak run $OBS_ID"
