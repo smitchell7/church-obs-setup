@@ -100,11 +100,13 @@ fi
 
 # Sacrament scene music: piano accompaniment of "Bread of Life, Living Water" (church hymn
 # recordings are free for home and church use). Not stored in the repo. Failure here is not fatal.
-echo "==> [6/6] Downloading the sacrament music"
+echo "==> [6/6] Installing the sacrament graphic and downloading the sacrament music"
 MUSIC_PAGE='https://www.churchofjesuschrist.org/media/music/songs/bread-of-life-living-water?lang=eng'
 MUSIC_FALLBACK='https://assets.churchofjesuschrist.org/a6/fa/a6fa4142ee3511eeab89eeeeac1ef623ccb828a4/bread_of_life_living_water.mp3'
 MUSIC_DIR="$TARGET_HOME/Documents/sacrament"
 MUSIC_FILE="$MUSIC_DIR/bread-of-life-living-water-piano.mp3"
+as_user mkdir -p "$MUSIC_DIR"
+as_user cp "$SCRIPT_DIR/assets/sacrament-graphic.png" "$MUSIC_DIR/sacrament-graphic.png"
 if [ ! -s "$MUSIC_FILE" ]; then
   # The page lists each recording's URL; pick the piano accompaniment (not guitar/vocal).
   MUSIC_URL=$(curl -fsSL -A 'Mozilla/5.0' "$MUSIC_PAGE" 2>/dev/null |
