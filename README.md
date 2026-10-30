@@ -27,3 +27,18 @@ These are the key objectives:
 - Stream (publish) audio + video to Zoom
 
 
+
+## Install OBS (Flatpak) on a new computer
+
+```bash
+sudo ./setup-obs-flatpak.sh
+```
+
+This installs OBS Studio, DistroAV (NDI) and the obs-ptz PTZ Controls extension system-wide,
+lets OBS reach the local network, and installs the FFmpeg libraries that NDI needs to decode
+HX2/HX3 cameras.
+
+- The obs-ptz Flatpak bundle is in `vendor/` (built from <https://github.com/smitchell7/obs-ptz>,
+  a fork of <https://github.com/glikely/obs-ptz>, GPL-2.0; the source is in that repo). To use a
+  different build, run `sudo PTZ_BUNDLE=/path/to/file.flatpak ./setup-obs-flatpak.sh`.
+- Without the HX libraries, HX cameras show black video with "NDI video decoder not found".

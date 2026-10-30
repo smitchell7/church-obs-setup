@@ -1,0 +1,15 @@
+# secrets and local config
+.env
+.api_key
+# python
+.venv/
+venv/
+__pycache__/
+*.pyc
+# whisper models, caches and live captions
+whisper-data/
+captions/
+captions.txt
+captions_es.txt
+caption.txt
+tmp-cap/
