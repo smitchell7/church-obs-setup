@@ -21,7 +21,7 @@ FFMPEG_RUNTIME_BRANCH=25.08
 CODECS_BRANCH=25.08-extra
 
 PIN_DOCK=ask
-DOCK_SCHEMA_FILE=${DOCK_SCHEMA_FILE:-/usr/share/glib-2.0/schemas/50_stake_defaults.gschema.override}
+DOCK_SCHEMA_FILE=${DOCK_SCHEMA_FILE:-/usr/share/glib-2.0/schemas/50_church_defaults.gschema.override}
 for arg in "$@"; do
   case "$arg" in
     --pin-dock) PIN_DOCK=yes ;;

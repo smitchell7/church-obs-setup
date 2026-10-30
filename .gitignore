@@ -13,3 +13,7 @@ captions.txt
 captions_es.txt
 caption.txt
 tmp-cap/
+
+# rendered autoinstall output (contains secrets)
+autoinstall/secrets.env
+autoinstall/user-data

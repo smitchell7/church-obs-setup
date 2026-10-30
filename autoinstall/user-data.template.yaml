@@ -1,0 +1,187 @@
+#cloud-config
+# Ubuntu autoinstall template. Do not put real passwords here: copy secrets.env.example
+# to secrets.env, fill it in, and run ./render-autoinstall.py to produce user-data.
+autoinstall:
+  version: 1
+  identity:
+    hostname: @HOSTNAME_PREFIX@-base
+    username: broadcast
+    password: "@PASSWORD_HASH@"
+  locale: en_US.UTF-8
+  timezone: America/Denver
+  keyboard:
+    layout: us
+  storage:
+    layout:
+      name: direct
+
+  packages:
+    - curl
+    - wget
+    - git
+    - neovim
+    - dconf-cli
+    - gsettings-desktop-schemas
+    - network-manager
+    - ubuntu-drivers-common
+    - flatpak
+    - gimp
+    - vlc
+    - v4l2loopback-dkms
+    - v4l2loopback-utils
+    - ffmpeg
+    - libavcodec-extra
+    - avahi-daemon
+
+  late-commands:
+    # Hostname from the hardware serial number, e.g. @HOSTNAME_PREFIX@-abc123
+    - curtin in-target -- bash -c 'SERIAL=$(tr -d " " < /sys/class/dmi/id/product_serial | tr "[:upper:]" "[:lower:]"); echo "@HOSTNAME_PREFIX@-${SERIAL:-unknown}" > /etc/hostname'
+
+    # Proprietary NVIDIA drivers (needs network; if this fails, run ubuntu-drivers install after first boot)
+    - curtin in-target -- ubuntu-drivers install || true
+
+    - curtin in-target -- systemctl enable avahi-daemon
+
+    # Wi-Fi networks
+    - |
+      cat << 'EOF' > /target/etc/NetworkManager/system-connections/@WIFI1_SSID@.nmconnection
+      [connection]
+      id=@WIFI1_SSID@
+      type=wifi
+      autoconnect=true
+
+      [wifi]
+      mode=infrastructure
+      ssid=@WIFI1_SSID@
+
+      [wifi-security]
+      key-mgmt=wpa-psk
+      psk=@WIFI1_PSK@
+
+      [ipv4]
+      method=auto
+
+      [ipv6]
+      method=auto
+      EOF
+      chmod 600 /target/etc/NetworkManager/system-connections/@WIFI1_SSID@.nmconnection
+    - |
+      cat << 'EOF' > /target/etc/NetworkManager/system-connections/@WIFI2_SSID@.nmconnection
+      [connection]
+      id=@WIFI2_SSID@
+      type=wifi
+      autoconnect=true
+
+      [wifi]
+      mode=infrastructure
+      ssid=@WIFI2_SSID@
+
+      [wifi-security]
+      key-mgmt=wpa-psk
+      psk=@WIFI2_PSK@
+
+      [ipv4]
+      method=auto
+
+      [ipv6]
+      method=auto
+      EOF
+      chmod 600 /target/etc/NetworkManager/system-connections/@WIFI2_SSID@.nmconnection
+
+    - curtin in-target -- wget -O /tmp/google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    - curtin in-target -- apt-get install -y /tmp/google-chrome.deb
+    - curtin in-target -- wget -O /tmp/zoom.deb https://zoom.us/client/latest/zoom_amd64.deb
+    - curtin in-target -- apt-get install -y /tmp/zoom.deb
+
+    # Wallpaper (optional: if the download fails, GNOME keeps its default background)
+    - curtin in-target -- mkdir -p /usr/share/backgrounds
+    - curtin in-target -- wget -O /usr/share/backgrounds/church_wallpaper.jpg "@WALLPAPER_URL@" || true
+    - curtin in-target -- chmod 644 /usr/share/backgrounds/church_wallpaper.jpg || true
+
+    # System-wide GNOME defaults: no lock screen, no sleep, wallpaper, OBS pinned to the dock
+    - |
+      mkdir -p /target/etc/dconf/profile /target/etc/dconf/db/local.d
+      cat << 'EOF' > /target/etc/dconf/profile/user
+      user-db:user
+      system-db:local
+      EOF
+
+      cat << 'EOF' > /target/etc/dconf/db/local.d/00-church-defaults
+      [org/gnome/desktop/background]
+      picture-uri='file:///usr/share/backgrounds/church_wallpaper.jpg'
+      picture-uri-dark='file:///usr/share/backgrounds/church_wallpaper.jpg'
+      picture-options='zoom'
+
+      [org/gnome/shell]
+      favorite-apps=['google-chrome.desktop', 'Zoom.desktop', 'com.obsproject.Studio.desktop', 'org.gnome.Terminal.desktop']
+
+      [org/gnome/shell/extensions/dash-to-dock]
+      show-mounts=false
+      show-trash=false
+
+      [org/gnome/desktop/screensaver]
+      lock-enabled=false
+
+      [org/gnome/desktop/lockdown]
+      disable-lock-screen=true
+
+      [org/gnome/desktop/session]
+      idle-delay=uint32 0
+      EOF
+      curtin in-target -- dconf update
+
+      cat << 'EOF' > /target/usr/share/glib-2.0/schemas/50_church_defaults.gschema.override
+      [org.gnome.desktop.background]
+      picture-uri='file:///usr/share/backgrounds/church_wallpaper.jpg'
+      picture-uri-dark='file:///usr/share/backgrounds/church_wallpaper.jpg'
+      picture-options='zoom'
+
+      [org.gnome.shell]
+      favorite-apps=['google-chrome.desktop', 'Zoom.desktop', 'com.obsproject.Studio.desktop', 'org.gnome.Terminal.desktop']
+
+      [org.gnome.shell.extensions.dash-to-dock]
+      show-mounts=false
+      show-trash=false
+
+      [org.gnome.desktop.screensaver]
+      lock-enabled=false
+
+      [org.gnome.desktop.lockdown]
+      disable-lock-screen=true
+
+      [org.gnome.desktop.session]
+      idle-delay=uint32 0
+      EOF
+      curtin in-target -- glib-compile-schemas /usr/share/glib-2.0/schemas/
+
+    # Passwordless automatic login for the 'broadcast' user
+    - |
+      mkdir -p /target/etc/gdm3
+      cat << 'EOF' > /target/etc/gdm3/custom.conf
+      [daemon]
+      AutomaticLoginEnable=True
+      AutomaticLogin=broadcast
+      EOF
+
+    # Flatpak apps can't be installed from this chroot, so install OBS on the first boot
+    - |
+      cat << 'EOF' > /target/etc/systemd/system/church-obs-firstboot.service
+      [Unit]
+      Description=Install OBS Studio (Flatpak) with the church plugins
+      After=network-online.target
+      Wants=network-online.target
+      ConditionPathExists=!/var/lib/church-obs-firstboot.done
+
+      [Service]
+      Type=oneshot
+      Environment=TARGET_USER=broadcast
+      ExecStart=/bin/bash -c 'test -d /opt/church-obs-setup || git clone https://github.com/smitchell7/church-obs-setup /opt/church-obs-setup'
+      ExecStart=/opt/church-obs-setup/setup-obs-flatpak.sh --no-pin-dock
+      ExecStartPost=/usr/bin/touch /var/lib/church-obs-firstboot.done
+      Restart=on-failure
+      RestartSec=60
+
+      [Install]
+      WantedBy=multi-user.target
+      EOF
+    - curtin in-target -- systemctl enable church-obs-firstboot.service

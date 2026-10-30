@@ -44,3 +44,17 @@ HX2/HX3 cameras.
 - It asks whether to add OBS to the GNOME dock (only offered on machines set up with the church
   autoinstall). Answer up front with `--pin-dock` or `--no-pin-dock`.
 - Without the HX libraries, HX cameras show black video with "NDI video decoder not found".
+
+## Automated Ubuntu install (autoinstall)
+
+`autoinstall/` holds a template for installing Ubuntu on a new computer: Mountain time
+(`America/Denver`), Wi-Fi, NVIDIA drivers, Chrome, Zoom, GNOME defaults, auto-login, and a
+first-boot service that runs `setup-obs-flatpak.sh`.
+
+```bash
+cd autoinstall
+cp secrets.env.example secrets.env   # fill in the hostname prefix, password hash, Wi-Fi, wallpaper
+./render-autoinstall.py              # writes user-data (git-ignored; it contains the secrets)
+```
+
+Never commit `secrets.env` or `user-data`.
