@@ -47,8 +47,8 @@ HX2/HX3 cameras.
   `quail-config`), or take `--config=quail-config` / `--no-config` up front. Each configuration is
   an OBS scene collection with that building's camera, presets and sacrament scene. Choose it
   afterwards from OBS's Scene Collection menu. An existing file is saved as `*.bak` first.
-- It makes the sacrament graphic (`tools/make-sacrament-graphic.py` downloads *The Good Shepherd*
-  from churchofjesuschrist.org and writes the "stream is paused" message on it; use `--image` for a
+- It makes the sacrament background picture (`tools/make-sacrament-graphic.py` downloads *The Good Shepherd*
+  from churchofjesuschrist.org and crops it; the message is OBS text layers in the scene; use `--image` for a
   different picture) in `~/Documents/sacrament/` and downloads the sacrament music (piano accompaniment of "Bread of Life, Living Water" from
   churchofjesuschrist.org) to `~/Documents/sacrament/`. The music is not stored in this repo.
 - Without the HX libraries, HX cameras show black video with "NDI video decoder not found".
