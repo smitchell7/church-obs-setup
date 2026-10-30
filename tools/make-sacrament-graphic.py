@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
-"""Build the 1920x1080 "stream paused for the sacrament" graphic.
+"""Build the 1920x1080 background for the sacrament scene.
 
 Downloads The Good Shepherd from churchofjesuschrist.org (personal, church-related,
-noncommercial use) unless --image is given, crops it to 16:9, darkens the bottom and writes
-the message on top. The painting is not stored in this repo.
+noncommercial use) unless --image is given, crops it to 16:9 and darkens the bottom so the
+scene's text layers stay readable. The text itself is OBS text sources in the scene collection,
+not part of this picture. The painting is not stored in this repo.
 """
 import argparse
 import io
 import urllib.request
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
 
 PAINTING_URL = ("https://www.churchofjesuschrist.org/imgs/75e126dbc032d0810fc934018c5ca415116ce5cb"
                 "/full/1920,/0/default?download=true")
-TITLE = "The stream is paused for the administration of the Sacrament"
-SUBTITLE = "We will resume the broadcast after the Sacrament is completed."
-FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf"
 W, H = 1920, 1080
 
 
@@ -32,18 +30,6 @@ def fit(img):
     fg = img.resize((round(H * ratio), H), Image.LANCZOS)
     bg.paste(fg, ((W - fg.width) // 2, 0))
     return bg
-
-
-def wrap(draw, text, font, width):
-    lines, line = [], ""
-    for word in text.split():
-        trial = f"{line} {word}".strip()
-        if draw.textlength(trial, font=font) <= width:
-            line = trial
-        else:
-            lines.append(line)
-            line = word
-    return lines + [line]
 
 
 def main():
@@ -66,17 +52,6 @@ def main():
         shade.putpixel((0, y), int(215 * t ** 1.3))
     img = Image.composite(Image.new("RGB", (W, H), (8, 12, 20)), img, shade.resize((W, H)))
 
-    d = ImageDraw.Draw(img)
-    title_font = ImageFont.truetype(FONT, 52)
-    sub_font = ImageFont.truetype(FONT, 38)
-    lines = wrap(d, TITLE, title_font, W - 240)
-    y = H - 70 - 46 - 66 * len(lines)
-    for line in lines:
-        d.text((W / 2, y), line, font=title_font, fill="white", anchor="ma",
-               stroke_width=2, stroke_fill=(0, 0, 0))
-        y += 66
-    d.text((W / 2, H - 100), SUBTITLE, font=sub_font, fill=(235, 235, 235), anchor="ma",
-           stroke_width=2, stroke_fill=(0, 0, 0))
     img.save(args.out)
     print(f"Wrote {args.out}")
 
