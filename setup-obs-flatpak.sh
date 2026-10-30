@@ -51,7 +51,7 @@ as_user() { sudo -u "$TARGET_USER" -H "$@"; }
 
 echo "==> [1/6] Installing Flatpak and adding the Flathub remote"
 apt-get update -y
-apt-get install -y flatpak
+apt-get install -y flatpak python3-pil curl
 flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
 echo "==> [2/6] Installing OBS Studio and DistroAV (system-wide)"
@@ -144,7 +144,9 @@ MUSIC_FALLBACK='https://assets.churchofjesuschrist.org/a6/fa/a6fa4142ee3511eeab8
 MUSIC_DIR="$TARGET_HOME/Documents/sacrament"
 MUSIC_FILE="$MUSIC_DIR/bread-of-life-living-water-piano.mp3"
 as_user mkdir -p "$MUSIC_DIR"
-as_user cp "$SCRIPT_DIR/assets/sacrament-graphic.png" "$MUSIC_DIR/sacrament-graphic.png"
+# The painting (The Good Shepherd) is downloaded and the message is drawn on it; neither is kept in the repo.
+as_user python3 -I "$SCRIPT_DIR/tools/make-sacrament-graphic.py" --out "$MUSIC_DIR/sacrament-graphic.png" \
+  || echo "WARNING: could not make the sacrament graphic; see tools/make-sacrament-graphic.py" >&2
 if [ ! -s "$MUSIC_FILE" ]; then
   # The page lists each recording's URL; pick the piano accompaniment (not guitar/vocal).
   MUSIC_URL=$(curl -fsSL -A 'Mozilla/5.0' "$MUSIC_PAGE" 2>/dev/null |
