@@ -44,20 +44,20 @@ TARGET_HOME=$(getent passwd "$TARGET_USER" | cut -d: -f6)
 [ -d "$TARGET_HOME" ] || { echo "No home directory for $TARGET_USER" >&2; exit 1; }
 as_user() { sudo -u "$TARGET_USER" -H "$@"; }
 
-echo "==> [1/5] Installing Flatpak and adding the Flathub remote"
+echo "==> [1/6] Installing Flatpak and adding the Flathub remote"
 apt-get update -y
 apt-get install -y flatpak
 flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
-echo "==> [2/5] Installing OBS Studio and DistroAV (system-wide)"
+echo "==> [2/6] Installing OBS Studio and DistroAV (system-wide)"
 flatpak install --system -y flathub "$OBS_ID"
 flatpak install --system -y flathub "$OBS_ID.Plugin.DistroAV"
 
-echo "==> [3/5] Letting OBS reach the local network and Avahi (mDNS camera discovery)"
+echo "==> [3/6] Letting OBS reach the local network and Avahi (mDNS camera discovery)"
 flatpak override --system --share=network "$OBS_ID"
 flatpak override --system --system-talk-name=org.freedesktop.Avahi "$OBS_ID"
 
-echo "==> [4/5] Installing obs-ptz (PTZ Controls) from the bundled Flatpak"
+echo "==> [4/6] Installing obs-ptz (PTZ Controls) from the bundled Flatpak"
 BUNDLE="${PTZ_BUNDLE:-}"
 if [ -z "$BUNDLE" ]; then
   BUNDLE=$(ls "$SCRIPT_DIR"/vendor/$PTZ_ASSET 2>/dev/null | tail -n1 || true)
@@ -65,7 +65,7 @@ fi
 [ -f "$BUNDLE" ] || { echo "No obs-ptz bundle found in $SCRIPT_DIR/vendor; set PTZ_BUNDLE=/path/to/file" >&2; exit 1; }
 flatpak install --system -y --bundle "$BUNDLE"
 
-echo "==> [5/5] Putting the NDI HX decoder libraries where OBS can find them"
+echo "==> [5/6] Putting the NDI HX decoder libraries where OBS can find them"
 flatpak install --system -y flathub \
   "org.freedesktop.Platform//$FFMPEG_RUNTIME_BRANCH" \
   "org.freedesktop.Platform.codecs-extra//$CODECS_BRANCH"
@@ -96,6 +96,23 @@ MISSING=$(as_user flatpak run --command=sh "$OBS_ID" -c \
 if [ -n "$MISSING" ]; then
   echo "WARNING: NDI HX decoding will not work, unresolved libraries:" >&2
   echo "$MISSING" >&2
+fi
+
+# Sacrament scene music: piano accompaniment of "Bread of Life, Living Water" (church hymn
+# recordings are free for home and church use). Not stored in the repo. Failure here is not fatal.
+echo "==> [6/6] Downloading the sacrament music"
+MUSIC_PAGE='https://www.churchofjesuschrist.org/media/music/songs/bread-of-life-living-water?lang=eng'
+MUSIC_FALLBACK='https://assets.churchofjesuschrist.org/a6/fa/a6fa4142ee3511eeab89eeeeac1ef623ccb828a4/bread_of_life_living_water.mp3'
+MUSIC_DIR="$TARGET_HOME/Documents/sacrament"
+MUSIC_FILE="$MUSIC_DIR/bread-of-life-living-water-piano.mp3"
+if [ ! -s "$MUSIC_FILE" ]; then
+  # The page lists each recording's URL; pick the piano accompaniment (not guitar/vocal).
+  MUSIC_URL=$(curl -fsSL -A 'Mozilla/5.0' "$MUSIC_PAGE" 2>/dev/null |
+    python3 -c 'import re,sys; m=re.search(r"\"assetType\":\"AUDIO_ACCOMPANIMENT\",\"distributionUrl\":\"([^\"]+\.mp3)\"", sys.stdin.read()); print(m.group(1) if m else "")' || true)
+  as_user mkdir -p "$MUSIC_DIR"
+  as_user curl -fsSL -o "$MUSIC_FILE.part" "${MUSIC_URL:-$MUSIC_FALLBACK}" \
+    && as_user mv "$MUSIC_FILE.part" "$MUSIC_FILE" \
+    || { rm -f "$MUSIC_FILE.part"; echo "WARNING: could not download the sacrament music; fetch it by hand from $MUSIC_PAGE" >&2; }
 fi
 
 # Optional: pin OBS to the GNOME dock. Only possible where a schema override already
