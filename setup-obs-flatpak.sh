@@ -5,6 +5,8 @@
 #     (built by https://github.com/smitchell7/obs-ptz, release v0.0.1-pre1)
 #
 # Usage:  sudo ./setup-obs-flatpak.sh [--pin-dock | --no-pin-dock]
+#   --config=NAME / --no-config  install the OBS scenes and camera setup in configs/NAME
+#                               (without either, it asks when run in a terminal)
 #   --pin-dock / --no-pin-dock  answer the "add OBS to the dock?" question up front
 #                               (without either, it asks when run in a terminal)
 # The user to configure is whoever ran sudo; override with TARGET_USER=name.
@@ -21,11 +23,14 @@ FFMPEG_RUNTIME_BRANCH=25.08
 CODECS_BRANCH=25.08-extra
 
 PIN_DOCK=ask
+CONFIG_CHOICE=ask
 DOCK_SCHEMA_FILE=${DOCK_SCHEMA_FILE:-/usr/share/glib-2.0/schemas/50_church_defaults.gschema.override}
 for arg in "$@"; do
   case "$arg" in
     --pin-dock) PIN_DOCK=yes ;;
     --no-pin-dock) PIN_DOCK=no ;;
+    --config=*) CONFIG_CHOICE=${arg#--config=} ;;
+    --no-config) CONFIG_CHOICE=none ;;
     *) echo "Unknown option: $arg" >&2; exit 1 ;;
   esac
 done
@@ -96,6 +101,39 @@ MISSING=$(as_user flatpak run --command=sh "$OBS_ID" -c \
 if [ -n "$MISSING" ]; then
   echo "WARNING: NDI HX decoding will not work, unresolved libraries:" >&2
   echo "$MISSING" >&2
+fi
+
+# OBS scene collection and camera setup for a specific building (configs/<name>/).
+echo "==> Choosing the OBS configuration"
+mapfile -t CONFIGS < <(cd "$SCRIPT_DIR/configs" 2>/dev/null && ls -d */ 2>/dev/null | tr -d / || true)
+if [ "$CONFIG_CHOICE" = ask ]; then
+  if [ "${#CONFIGS[@]}" -eq 0 ]; then
+    CONFIG_CHOICE=none
+  elif [ -t 0 ]; then
+    echo "Which building's OBS configuration should be installed?"
+    select choice in "${CONFIGS[@]}" "none (set OBS up by hand)"; do
+      case "$choice" in
+        "") echo "Pick a number from the list." ;;
+        none*) CONFIG_CHOICE=none; break ;;
+        *) CONFIG_CHOICE=$choice; break ;;
+      esac
+    done
+  else
+    echo "No --config given and not running in a terminal; skipping the OBS configuration."
+    CONFIG_CHOICE=none
+  fi
+fi
+if [ "$CONFIG_CHOICE" != none ]; then
+  CONFIG_SRC="$SCRIPT_DIR/configs/$CONFIG_CHOICE"
+  [ -d "$CONFIG_SRC" ] || { echo "No such configuration: $CONFIG_CHOICE (have: ${CONFIGS[*]:-none})" >&2; exit 1; }
+  SCENES_DIR="$TARGET_HOME/.var/app/$OBS_ID/config/obs-studio/basic/scenes"
+  as_user mkdir -p "$SCENES_DIR"
+  for f in "$CONFIG_SRC"/*.json; do
+    dest="$SCENES_DIR/$(basename "$f")"
+    [ -e "$dest" ] && as_user cp "$dest" "$dest.$(date +%Y%m%d-%H%M%S).bak"
+    sed "s|@HOME@|$TARGET_HOME|g" "$f" | as_user tee "$dest" >/dev/null
+  done
+  echo "Installed the '$CONFIG_CHOICE' scene collection. In OBS choose it from the Scene Collection menu."
 fi
 
 # Sacrament scene music: piano accompaniment of "Bread of Life, Living Water" (church hymn

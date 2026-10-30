@@ -43,6 +43,10 @@ HX2/HX3 cameras.
   different build, run `sudo PTZ_BUNDLE=/path/to/file.flatpak ./setup-obs-flatpak.sh`.
 - It asks whether to add OBS to the GNOME dock (only offered on machines set up with the church
   autoinstall). Answer up front with `--pin-dock` or `--no-pin-dock`.
+- It asks which building's OBS configuration to install (the folders in `configs/`, currently
+  `quail-config`), or take `--config=quail-config` / `--no-config` up front. Each configuration is
+  an OBS scene collection with that building's camera, presets and sacrament scene. Choose it
+  afterwards from OBS's Scene Collection menu. An existing file is saved as `*.bak` first.
 - It copies the sacrament graphic (`assets/sacrament-graphic.png`) to `~/Documents/sacrament/` and downloads the sacrament music (piano accompaniment of "Bread of Life, Living Water" from
   churchofjesuschrist.org) to `~/Documents/sacrament/`. The music is not stored in this repo.
 - Without the HX libraries, HX cameras show black video with "NDI video decoder not found".
