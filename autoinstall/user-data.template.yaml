@@ -32,6 +32,7 @@ autoinstall:
     - ffmpeg
     - libavcodec-extra
     - avahi-daemon
+    - pavucontrol
 
   late-commands:
     # Hostname from the hardware serial number, e.g. @HOSTNAME_PREFIX@-abc123
