@@ -47,11 +47,12 @@ HX2/HX3 cameras.
   `--config=dual-camera` or `--no-config` up front. Each is an OBS scene collection with the cameras, PTZ
   presets and the sacrament scene. Choose it afterwards from OBS's Scene Collection menu. An existing file is
   saved as `*.bak` first.
-  - `single-camera`: one NDI camera at 192.168.111.245. Scenes: Pulpit, Rostrum, Full Room, Chorister, Sacrament.
+  - `single-camera`: one NDI camera at 192.168.111.245. Scenes: Pulpit, Rostrum, Full Room, Chorister, Piano,
+    Speaker Close-up, Organ, Choir, Sacrament.
   - `dual-camera`: adds a second camera at 192.168.111.246 (245 is "Left", 246 is "Right"), each with its own
-    PTZ device. Scenes: Left/Right Pulpit, Rostrum, Full Room and Chorister, plus Sacrament.
-  - Presets are stored in the cameras: save positions in slots 0-3 on each camera (0 Pulpit, 1 Chorister/Piano,
-    2 Rostrum, 3 Full Room) so the scenes can recall them.
+    PTZ device. Every scene above except Sacrament comes as a Left and a Right version ("Left Pulpit", ...).
+  - Presets are stored in the cameras: save positions in these slots on each camera so the scenes can recall
+    them: 0 Pulpit, 1 Chorister, 2 Rostrum, 3 Full Room, 4 Piano, 5 Speaker Close-up, 6 Organ, 7 Choir.
 - It makes the sacrament background picture (`tools/make-sacrament-graphic.py` downloads *The Good Shepherd*
   from churchofjesuschrist.org and crops it; the message is OBS text layers in the scene; use `--image` for a
   different picture) in `~/Documents/sacrament/` and downloads the sacrament music (piano accompaniment of "Bread of Life, Living Water" from

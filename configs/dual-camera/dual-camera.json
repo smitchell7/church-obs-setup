@@ -228,7 +228,7 @@
         {
             "prev_ver": 553648128,
             "name": "Camera Right",
-            "uuid": "0989709f-dab3-469e-ae51-19e30b3706aa",
+            "uuid": "24105413-d5d7-4f3b-8c3f-a779956330bc",
             "id": "ndi_source",
             "versioned_id": "ndi_source",
             "settings": {
@@ -305,7 +305,7 @@
                             },
                             {
                                 "id": "camera:1",
-                                "name": "Left Chorister Piano"
+                                "name": "Left Chorister"
                             },
                             {
                                 "id": "camera:2",
@@ -314,6 +314,22 @@
                             {
                                 "id": "camera:3",
                                 "name": "Left Full Room"
+                            },
+                            {
+                                "id": "camera:4",
+                                "name": "Left Piano"
+                            },
+                            {
+                                "id": "camera:5",
+                                "name": "Left Speaker Close-up"
+                            },
+                            {
+                                "id": "camera:6",
+                                "name": "Left Organ"
+                            },
+                            {
+                                "id": "camera:7",
+                                "name": "Left Choir"
                             }
                         ],
                         "host": "192.168.111.245",
@@ -344,6 +360,18 @@
                             },
                             {
                                 "id": "camera:3"
+                            },
+                            {
+                                "id": "camera:4"
+                            },
+                            {
+                                "id": "camera:5"
+                            },
+                            {
+                                "id": "camera:6"
+                            },
+                            {
+                                "id": "camera:7"
                             }
                         ],
                         "visca_pan_range": 5120,
@@ -375,7 +403,7 @@
         {
             "prev_ver": 553648128,
             "name": "PTZ Right",
-            "uuid": "cbe4eede-b79e-462f-865d-7a5853c77197",
+            "uuid": "ae655ad1-03c3-4ab8-8363-d1d453d74781",
             "id": "color_source",
             "versioned_id": "color_source_v3",
             "settings": {
@@ -404,7 +432,7 @@
                 {
                     "prev_ver": 553648128,
                     "name": "VISCA PTZ Control",
-                    "uuid": "e6c66527-4dad-4a4a-84a4-1a988197f186",
+                    "uuid": "4e41dd1f-c362-489c-8ae9-855e3179204a",
                     "id": "ca.secretlab.obs-ptz.visca",
                     "versioned_id": "ca.secretlab.obs-ptz.visca",
                     "settings": {
@@ -415,7 +443,7 @@
                             },
                             {
                                 "id": "camera:1",
-                                "name": "Right Chorister Piano"
+                                "name": "Right Chorister"
                             },
                             {
                                 "id": "camera:2",
@@ -424,6 +452,22 @@
                             {
                                 "id": "camera:3",
                                 "name": "Right Full Room"
+                            },
+                            {
+                                "id": "camera:4",
+                                "name": "Right Piano"
+                            },
+                            {
+                                "id": "camera:5",
+                                "name": "Right Speaker Close-up"
+                            },
+                            {
+                                "id": "camera:6",
+                                "name": "Right Organ"
+                            },
+                            {
+                                "id": "camera:7",
+                                "name": "Right Choir"
                             }
                         ],
                         "host": "192.168.111.246",
@@ -454,6 +498,18 @@
                             },
                             {
                                 "id": "camera:3"
+                            },
+                            {
+                                "id": "camera:4"
+                            },
+                            {
+                                "id": "camera:5"
+                            },
+                            {
+                                "id": "camera:6"
+                            },
+                            {
+                                "id": "camera:7"
                             }
                         ],
                         "visca_pan_range": 5120,
@@ -485,13 +541,13 @@
         {
             "prev_ver": 553648128,
             "name": "Preset - Left Pulpit",
-            "uuid": "040b07d0-e7a3-4fe3-b33c-e4fe3dbd11d1",
+            "uuid": "c5ac2a9d-7ecb-431f-86a4-282630add18d",
             "id": "ptz_action_source",
             "versioned_id": "ptz_action_source",
             "settings": {
                 "action": 2,
-                "device_uuid": "1200bad1-6c44-4381-b504-19b41a1b50c6",
-                "preset_id": "camera:0"
+                "preset_id": "camera:0",
+                "device_uuid": "1200bad1-6c44-4381-b504-19b41a1b50c6"
             },
             "mixers": 0,
             "sync": 0,
@@ -513,8 +569,8 @@
         },
         {
             "prev_ver": 553648128,
-            "name": "Preset - Left Chorister Piano",
-            "uuid": "57ce154f-3685-4c65-bbe3-d1f03731ebc5",
+            "name": "Preset - Left Chorister",
+            "uuid": "7d055d44-2dc7-4437-80af-2eb9046e7d96",
             "id": "ptz_action_source",
             "versioned_id": "ptz_action_source",
             "settings": {
@@ -543,7 +599,7 @@
         {
             "prev_ver": 553648128,
             "name": "Preset - Left Rostrum",
-            "uuid": "66d2b0ef-504b-45b0-a8a7-60dc7475932a",
+            "uuid": "eb08943c-c6b7-4541-9ce4-0a82e1266b57",
             "id": "ptz_action_source",
             "versioned_id": "ptz_action_source",
             "settings": {
@@ -572,7 +628,7 @@
         {
             "prev_ver": 553648128,
             "name": "Preset - Left Full Room",
-            "uuid": "22cb0225-a650-4414-baff-4f55f9cbe985",
+            "uuid": "327d2921-2dfd-4487-bb1b-d074e6e0ef77",
             "id": "ptz_action_source",
             "versioned_id": "ptz_action_source",
             "settings": {
@@ -600,14 +656,14 @@
         },
         {
             "prev_ver": 553648128,
-            "name": "Preset - Right Pulpit",
-            "uuid": "decd7273-4eb8-4e67-af6d-7e59292c2224",
+            "name": "Preset - Left Piano",
+            "uuid": "3153a685-4276-4ae5-a174-74dbb135507a",
             "id": "ptz_action_source",
             "versioned_id": "ptz_action_source",
             "settings": {
                 "action": 2,
-                "device_uuid": "e6c66527-4dad-4a4a-84a4-1a988197f186",
-                "preset_id": "camera:0"
+                "preset_id": "camera:4",
+                "device_uuid": "1200bad1-6c44-4381-b504-19b41a1b50c6"
             },
             "mixers": 0,
             "sync": 0,
@@ -629,14 +685,130 @@
         },
         {
             "prev_ver": 553648128,
-            "name": "Preset - Right Chorister Piano",
-            "uuid": "2b6504f0-44ba-4854-b4d5-0e53492da19a",
+            "name": "Preset - Left Speaker Close-up",
+            "uuid": "3cb54eae-bb0f-409f-bf60-31ef73fa05ff",
+            "id": "ptz_action_source",
+            "versioned_id": "ptz_action_source",
+            "settings": {
+                "action": 2,
+                "preset_id": "camera:5",
+                "device_uuid": "1200bad1-6c44-4381-b504-19b41a1b50c6"
+            },
+            "mixers": 0,
+            "sync": 0,
+            "flags": 0,
+            "volume": 1.0,
+            "balance": 0.5,
+            "enabled": true,
+            "muted": false,
+            "push-to-mute": false,
+            "push-to-mute-delay": 0,
+            "push-to-talk": false,
+            "push-to-talk-delay": 0,
+            "hotkeys": {},
+            "deinterlace_mode": 0,
+            "deinterlace_field_order": 0,
+            "monitoring_type": 0,
+            "monitoring_enabled": false,
+            "private_settings": {}
+        },
+        {
+            "prev_ver": 553648128,
+            "name": "Preset - Left Organ",
+            "uuid": "55e4cf8d-14fc-4644-9506-1271ba9f1051",
+            "id": "ptz_action_source",
+            "versioned_id": "ptz_action_source",
+            "settings": {
+                "action": 2,
+                "preset_id": "camera:6",
+                "device_uuid": "1200bad1-6c44-4381-b504-19b41a1b50c6"
+            },
+            "mixers": 0,
+            "sync": 0,
+            "flags": 0,
+            "volume": 1.0,
+            "balance": 0.5,
+            "enabled": true,
+            "muted": false,
+            "push-to-mute": false,
+            "push-to-mute-delay": 0,
+            "push-to-talk": false,
+            "push-to-talk-delay": 0,
+            "hotkeys": {},
+            "deinterlace_mode": 0,
+            "deinterlace_field_order": 0,
+            "monitoring_type": 0,
+            "monitoring_enabled": false,
+            "private_settings": {}
+        },
+        {
+            "prev_ver": 553648128,
+            "name": "Preset - Left Choir",
+            "uuid": "69c6cf9c-0e16-4526-aa27-bcff6fb3c3d2",
+            "id": "ptz_action_source",
+            "versioned_id": "ptz_action_source",
+            "settings": {
+                "action": 2,
+                "preset_id": "camera:7",
+                "device_uuid": "1200bad1-6c44-4381-b504-19b41a1b50c6"
+            },
+            "mixers": 0,
+            "sync": 0,
+            "flags": 0,
+            "volume": 1.0,
+            "balance": 0.5,
+            "enabled": true,
+            "muted": false,
+            "push-to-mute": false,
+            "push-to-mute-delay": 0,
+            "push-to-talk": false,
+            "push-to-talk-delay": 0,
+            "hotkeys": {},
+            "deinterlace_mode": 0,
+            "deinterlace_field_order": 0,
+            "monitoring_type": 0,
+            "monitoring_enabled": false,
+            "private_settings": {}
+        },
+        {
+            "prev_ver": 553648128,
+            "name": "Preset - Right Pulpit",
+            "uuid": "29cfa266-46a9-43c0-8d44-61123cc09b7e",
+            "id": "ptz_action_source",
+            "versioned_id": "ptz_action_source",
+            "settings": {
+                "action": 2,
+                "preset_id": "camera:0",
+                "device_uuid": "4e41dd1f-c362-489c-8ae9-855e3179204a"
+            },
+            "mixers": 0,
+            "sync": 0,
+            "flags": 0,
+            "volume": 1.0,
+            "balance": 0.5,
+            "enabled": true,
+            "muted": false,
+            "push-to-mute": false,
+            "push-to-mute-delay": 0,
+            "push-to-talk": false,
+            "push-to-talk-delay": 0,
+            "hotkeys": {},
+            "deinterlace_mode": 0,
+            "deinterlace_field_order": 0,
+            "monitoring_type": 0,
+            "monitoring_enabled": false,
+            "private_settings": {}
+        },
+        {
+            "prev_ver": 553648128,
+            "name": "Preset - Right Chorister",
+            "uuid": "9b33070b-7c38-432f-9036-cc807691a581",
             "id": "ptz_action_source",
             "versioned_id": "ptz_action_source",
             "settings": {
                 "action": 2,
                 "preset_id": "camera:1",
-                "device_uuid": "e6c66527-4dad-4a4a-84a4-1a988197f186"
+                "device_uuid": "4e41dd1f-c362-489c-8ae9-855e3179204a"
             },
             "mixers": 0,
             "sync": 0,
@@ -659,13 +831,13 @@
         {
             "prev_ver": 553648128,
             "name": "Preset - Right Rostrum",
-            "uuid": "7fe40ccc-478c-4c5a-924a-fc26921fd714",
+            "uuid": "1131ecb7-f7c7-421d-bf04-a1c90a528827",
             "id": "ptz_action_source",
             "versioned_id": "ptz_action_source",
             "settings": {
                 "action": 2,
                 "preset_id": "camera:2",
-                "device_uuid": "e6c66527-4dad-4a4a-84a4-1a988197f186"
+                "device_uuid": "4e41dd1f-c362-489c-8ae9-855e3179204a"
             },
             "mixers": 0,
             "sync": 0,
@@ -688,13 +860,129 @@
         {
             "prev_ver": 553648128,
             "name": "Preset - Right Full Room",
-            "uuid": "9f077240-038b-4433-8fbc-44eac9331b87",
+            "uuid": "90af654e-fdf0-4488-be52-eecff1af029e",
             "id": "ptz_action_source",
             "versioned_id": "ptz_action_source",
             "settings": {
                 "action": 2,
                 "preset_id": "camera:3",
-                "device_uuid": "e6c66527-4dad-4a4a-84a4-1a988197f186"
+                "device_uuid": "4e41dd1f-c362-489c-8ae9-855e3179204a"
+            },
+            "mixers": 0,
+            "sync": 0,
+            "flags": 0,
+            "volume": 1.0,
+            "balance": 0.5,
+            "enabled": true,
+            "muted": false,
+            "push-to-mute": false,
+            "push-to-mute-delay": 0,
+            "push-to-talk": false,
+            "push-to-talk-delay": 0,
+            "hotkeys": {},
+            "deinterlace_mode": 0,
+            "deinterlace_field_order": 0,
+            "monitoring_type": 0,
+            "monitoring_enabled": false,
+            "private_settings": {}
+        },
+        {
+            "prev_ver": 553648128,
+            "name": "Preset - Right Piano",
+            "uuid": "fbda1338-faae-4664-9a5e-4ecccdb4a364",
+            "id": "ptz_action_source",
+            "versioned_id": "ptz_action_source",
+            "settings": {
+                "action": 2,
+                "preset_id": "camera:4",
+                "device_uuid": "4e41dd1f-c362-489c-8ae9-855e3179204a"
+            },
+            "mixers": 0,
+            "sync": 0,
+            "flags": 0,
+            "volume": 1.0,
+            "balance": 0.5,
+            "enabled": true,
+            "muted": false,
+            "push-to-mute": false,
+            "push-to-mute-delay": 0,
+            "push-to-talk": false,
+            "push-to-talk-delay": 0,
+            "hotkeys": {},
+            "deinterlace_mode": 0,
+            "deinterlace_field_order": 0,
+            "monitoring_type": 0,
+            "monitoring_enabled": false,
+            "private_settings": {}
+        },
+        {
+            "prev_ver": 553648128,
+            "name": "Preset - Right Speaker Close-up",
+            "uuid": "d80a932a-7349-4aee-8a96-b9b1bfbc0440",
+            "id": "ptz_action_source",
+            "versioned_id": "ptz_action_source",
+            "settings": {
+                "action": 2,
+                "preset_id": "camera:5",
+                "device_uuid": "4e41dd1f-c362-489c-8ae9-855e3179204a"
+            },
+            "mixers": 0,
+            "sync": 0,
+            "flags": 0,
+            "volume": 1.0,
+            "balance": 0.5,
+            "enabled": true,
+            "muted": false,
+            "push-to-mute": false,
+            "push-to-mute-delay": 0,
+            "push-to-talk": false,
+            "push-to-talk-delay": 0,
+            "hotkeys": {},
+            "deinterlace_mode": 0,
+            "deinterlace_field_order": 0,
+            "monitoring_type": 0,
+            "monitoring_enabled": false,
+            "private_settings": {}
+        },
+        {
+            "prev_ver": 553648128,
+            "name": "Preset - Right Organ",
+            "uuid": "539fa2e4-cb3c-4fe9-b84b-682522ecaf01",
+            "id": "ptz_action_source",
+            "versioned_id": "ptz_action_source",
+            "settings": {
+                "action": 2,
+                "preset_id": "camera:6",
+                "device_uuid": "4e41dd1f-c362-489c-8ae9-855e3179204a"
+            },
+            "mixers": 0,
+            "sync": 0,
+            "flags": 0,
+            "volume": 1.0,
+            "balance": 0.5,
+            "enabled": true,
+            "muted": false,
+            "push-to-mute": false,
+            "push-to-mute-delay": 0,
+            "push-to-talk": false,
+            "push-to-talk-delay": 0,
+            "hotkeys": {},
+            "deinterlace_mode": 0,
+            "deinterlace_field_order": 0,
+            "monitoring_type": 0,
+            "monitoring_enabled": false,
+            "private_settings": {}
+        },
+        {
+            "prev_ver": 553648128,
+            "name": "Preset - Right Choir",
+            "uuid": "bc534c1a-5c5a-4eef-8fc6-0a99fa00e56d",
+            "id": "ptz_action_source",
+            "versioned_id": "ptz_action_source",
+            "settings": {
+                "action": 2,
+                "preset_id": "camera:7",
+                "device_uuid": "4e41dd1f-c362-489c-8ae9-855e3179204a"
             },
             "mixers": 0,
             "sync": 0,
@@ -717,7 +1005,7 @@
         {
             "prev_ver": 553648128,
             "name": "Left Pulpit",
-            "uuid": "d04b062d-5a9e-49fa-b46f-49aa63d301dc",
+            "uuid": "f99b835d-ea63-4bfa-ac88-20b8d17900d8",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -781,7 +1069,7 @@
                     },
                     {
                         "name": "Preset - Left Pulpit",
-                        "source_uuid": "040b07d0-e7a3-4fe3-b33c-e4fe3dbd11d1",
+                        "source_uuid": "c5ac2a9d-7ecb-431f-86a4-282630add18d",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -863,17 +1151,72 @@
         },
         {
             "prev_ver": 553648128,
-            "name": "Right Pulpit",
-            "uuid": "ceca21d5-ba61-406b-8bfa-83ed45b3a6a8",
+            "name": "Left Chorister",
+            "uuid": "8e0dde3f-7625-478d-ad54-a3431cc3cc3b",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
                 "custom_size": false,
-                "id_counter": 2,
+                "id_counter": 3,
                 "items": [
                     {
-                        "name": "Camera Right",
-                        "source_uuid": "0989709f-dab3-469e-ae51-19e30b3706aa",
+                        "name": "Color",
+                        "source_uuid": "433b0ea0-6b24-49d9-a41f-56794ded3674",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 3,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777910232544,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Camera Left",
+                        "source_uuid": "8d29ab20-b88f-4336-8b5d-6918b9cc64e4",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -927,8 +1270,8 @@
                         "private_settings": {}
                     },
                     {
-                        "name": "Preset - Right Pulpit",
-                        "source_uuid": "decd7273-4eb8-4e67-af6d-7e59292c2224",
+                        "name": "Preset - Left Chorister",
+                        "source_uuid": "7d055d44-2dc7-4437-80af-2eb9046e7d96",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -996,6 +1339,8 @@
             "push-to-talk-delay": 0,
             "hotkeys": {
                 "OBSBasic.SelectScene": [],
+                "libobs.show_scene_item.3": [],
+                "libobs.hide_scene_item.3": [],
                 "libobs.show_scene_item.1": [],
                 "libobs.hide_scene_item.1": [],
                 "libobs.show_scene_item.2": [],
@@ -1011,7 +1356,7 @@
         {
             "prev_ver": 553648128,
             "name": "Left Rostrum",
-            "uuid": "2c2a4d11-4a49-491f-af6f-32efad7e26c7",
+            "uuid": "0740274a-19d6-4dfe-acc1-9cfcac867c76",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -1075,154 +1420,7 @@
                     },
                     {
                         "name": "Preset - Left Rostrum",
-                        "source_uuid": "66d2b0ef-504b-45b0-a8a7-60dc7475932a",
-                        "visible": true,
-                        "locked": false,
-                        "rot": 0.0,
-                        "scale_ref": {
-                            "x": 1920.0,
-                            "y": 1080.0
-                        },
-                        "align": 5,
-                        "bounds_type": 0,
-                        "bounds_align": 0,
-                        "bounds_crop": false,
-                        "crop_left": 0,
-                        "crop_top": 0,
-                        "crop_right": 0,
-                        "crop_bottom": 0,
-                        "id": 2,
-                        "group_item_backup": false,
-                        "pos": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "pos_rel": {
-                            "x": -1.7777777910232544,
-                            "y": -1.0
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0
-                        },
-                        "scale_rel": {
-                            "x": 1.0,
-                            "y": 1.0
-                        },
-                        "bounds": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "bounds_rel": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "scale_filter": "disable",
-                        "blend_method": "default",
-                        "blend_type": "normal",
-                        "show_transition": {
-                            "duration": 300
-                        },
-                        "hide_transition": {
-                            "duration": 300
-                        },
-                        "private_settings": {}
-                    }
-                ]
-            },
-            "mixers": 0,
-            "sync": 0,
-            "flags": 0,
-            "volume": 1.0,
-            "balance": 0.5,
-            "enabled": true,
-            "muted": false,
-            "push-to-mute": false,
-            "push-to-mute-delay": 0,
-            "push-to-talk": false,
-            "push-to-talk-delay": 0,
-            "hotkeys": {
-                "OBSBasic.SelectScene": [],
-                "libobs.show_scene_item.1": [],
-                "libobs.hide_scene_item.1": [],
-                "libobs.show_scene_item.2": [],
-                "libobs.hide_scene_item.2": []
-            },
-            "deinterlace_mode": 0,
-            "deinterlace_field_order": 0,
-            "monitoring_type": 0,
-            "monitoring_enabled": false,
-            "canvas_uuid": "6c69626f-6273-4c00-9d88-c5136d61696e",
-            "private_settings": {}
-        },
-        {
-            "prev_ver": 553648128,
-            "name": "Right Rostrum",
-            "uuid": "d9d1a549-e50f-4aa2-8d75-b2412809d8ac",
-            "id": "scene",
-            "versioned_id": "scene",
-            "settings": {
-                "custom_size": false,
-                "id_counter": 2,
-                "items": [
-                    {
-                        "name": "Camera Right",
-                        "source_uuid": "0989709f-dab3-469e-ae51-19e30b3706aa",
-                        "visible": true,
-                        "locked": false,
-                        "rot": 0.0,
-                        "scale_ref": {
-                            "x": 1920.0,
-                            "y": 1080.0
-                        },
-                        "align": 5,
-                        "bounds_type": 0,
-                        "bounds_align": 0,
-                        "bounds_crop": false,
-                        "crop_left": 0,
-                        "crop_top": 0,
-                        "crop_right": 0,
-                        "crop_bottom": 0,
-                        "id": 1,
-                        "group_item_backup": false,
-                        "pos": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "pos_rel": {
-                            "x": -1.7777777910232544,
-                            "y": -1.0
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0
-                        },
-                        "scale_rel": {
-                            "x": 1.0,
-                            "y": 1.0
-                        },
-                        "bounds": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "bounds_rel": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "scale_filter": "disable",
-                        "blend_method": "default",
-                        "blend_type": "normal",
-                        "show_transition": {
-                            "duration": 300
-                        },
-                        "hide_transition": {
-                            "duration": 300
-                        },
-                        "private_settings": {}
-                    },
-                    {
-                        "name": "Preset - Right Rostrum",
-                        "source_uuid": "7fe40ccc-478c-4c5a-924a-fc26921fd714",
+                        "source_uuid": "eb08943c-c6b7-4541-9ce4-0a82e1266b57",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -1305,12 +1503,12 @@
         {
             "prev_ver": 553648128,
             "name": "Left Full Room",
-            "uuid": "7674b865-d740-4017-b292-a571d6eab45b",
+            "uuid": "86a77433-65b2-4b7e-aa01-17dba7100172",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
                 "custom_size": false,
-                "id_counter": 4,
+                "id_counter": 2,
                 "items": [
                     {
                         "name": "Camera Left",
@@ -1369,7 +1567,7 @@
                     },
                     {
                         "name": "Preset - Left Full Room",
-                        "source_uuid": "22cb0225-a650-4414-baff-4f55f9cbe985",
+                        "source_uuid": "327d2921-2dfd-4487-bb1b-d074e6e0ef77",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -1385,7 +1583,7 @@
                         "crop_top": 0,
                         "crop_right": 0,
                         "crop_bottom": 0,
-                        "id": 3,
+                        "id": 2,
                         "group_item_backup": false,
                         "pos": {
                             "x": 0.0,
@@ -1439,10 +1637,8 @@
                 "OBSBasic.SelectScene": [],
                 "libobs.show_scene_item.1": [],
                 "libobs.hide_scene_item.1": [],
-                "libobs.show_scene_item.3": [],
-                "libobs.hide_scene_item.3": [],
-                "libobs.show_scene_item.4": [],
-                "libobs.hide_scene_item.4": []
+                "libobs.show_scene_item.2": [],
+                "libobs.hide_scene_item.2": []
             },
             "deinterlace_mode": 0,
             "deinterlace_field_order": 0,
@@ -1453,17 +1649,17 @@
         },
         {
             "prev_ver": 553648128,
-            "name": "Right Full Room",
-            "uuid": "f7672e6c-08dd-43fa-9444-01c1cc64cb7d",
+            "name": "Left Piano",
+            "uuid": "f521ae98-da25-4b72-8c85-55b48de3fcfb",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
                 "custom_size": false,
-                "id_counter": 4,
+                "id_counter": 2,
                 "items": [
                     {
-                        "name": "Camera Right",
-                        "source_uuid": "0989709f-dab3-469e-ae51-19e30b3706aa",
+                        "name": "Camera Left",
+                        "source_uuid": "8d29ab20-b88f-4336-8b5d-6918b9cc64e4",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -1517,8 +1713,8 @@
                         "private_settings": {}
                     },
                     {
-                        "name": "Preset - Right Full Room",
-                        "source_uuid": "9f077240-038b-4433-8fbc-44eac9331b87",
+                        "name": "Preset - Left Piano",
+                        "source_uuid": "3153a685-4276-4ae5-a174-74dbb135507a",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -1534,7 +1730,7 @@
                         "crop_top": 0,
                         "crop_right": 0,
                         "crop_bottom": 0,
-                        "id": 3,
+                        "id": 2,
                         "group_item_backup": false,
                         "pos": {
                             "x": 0.0,
@@ -1588,10 +1784,8 @@
                 "OBSBasic.SelectScene": [],
                 "libobs.show_scene_item.1": [],
                 "libobs.hide_scene_item.1": [],
-                "libobs.show_scene_item.3": [],
-                "libobs.hide_scene_item.3": [],
-                "libobs.show_scene_item.4": [],
-                "libobs.hide_scene_item.4": []
+                "libobs.show_scene_item.2": [],
+                "libobs.hide_scene_item.2": []
             },
             "deinterlace_mode": 0,
             "deinterlace_field_order": 0,
@@ -1602,8 +1796,596 @@
         },
         {
             "prev_ver": 553648128,
-            "name": "Left Chorister",
-            "uuid": "0a37e3dd-11ed-4fc8-bb92-af8d0cb06c64",
+            "name": "Left Speaker Close-up",
+            "uuid": "bae1a12e-73b1-4edb-95ec-92f2e87256d4",
+            "id": "scene",
+            "versioned_id": "scene",
+            "settings": {
+                "custom_size": false,
+                "id_counter": 2,
+                "items": [
+                    {
+                        "name": "Camera Left",
+                        "source_uuid": "8d29ab20-b88f-4336-8b5d-6918b9cc64e4",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 1,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777910232544,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Preset - Left Speaker Close-up",
+                        "source_uuid": "3cb54eae-bb0f-409f-bf60-31ef73fa05ff",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 2,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777910232544,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    }
+                ]
+            },
+            "mixers": 0,
+            "sync": 0,
+            "flags": 0,
+            "volume": 1.0,
+            "balance": 0.5,
+            "enabled": true,
+            "muted": false,
+            "push-to-mute": false,
+            "push-to-mute-delay": 0,
+            "push-to-talk": false,
+            "push-to-talk-delay": 0,
+            "hotkeys": {
+                "OBSBasic.SelectScene": [],
+                "libobs.show_scene_item.1": [],
+                "libobs.hide_scene_item.1": [],
+                "libobs.show_scene_item.2": [],
+                "libobs.hide_scene_item.2": []
+            },
+            "deinterlace_mode": 0,
+            "deinterlace_field_order": 0,
+            "monitoring_type": 0,
+            "monitoring_enabled": false,
+            "canvas_uuid": "6c69626f-6273-4c00-9d88-c5136d61696e",
+            "private_settings": {}
+        },
+        {
+            "prev_ver": 553648128,
+            "name": "Left Organ",
+            "uuid": "06fd8195-4a3b-4a59-b209-7099327aa970",
+            "id": "scene",
+            "versioned_id": "scene",
+            "settings": {
+                "custom_size": false,
+                "id_counter": 2,
+                "items": [
+                    {
+                        "name": "Camera Left",
+                        "source_uuid": "8d29ab20-b88f-4336-8b5d-6918b9cc64e4",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 1,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777910232544,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Preset - Left Organ",
+                        "source_uuid": "55e4cf8d-14fc-4644-9506-1271ba9f1051",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 2,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777910232544,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    }
+                ]
+            },
+            "mixers": 0,
+            "sync": 0,
+            "flags": 0,
+            "volume": 1.0,
+            "balance": 0.5,
+            "enabled": true,
+            "muted": false,
+            "push-to-mute": false,
+            "push-to-mute-delay": 0,
+            "push-to-talk": false,
+            "push-to-talk-delay": 0,
+            "hotkeys": {
+                "OBSBasic.SelectScene": [],
+                "libobs.show_scene_item.1": [],
+                "libobs.hide_scene_item.1": [],
+                "libobs.show_scene_item.2": [],
+                "libobs.hide_scene_item.2": []
+            },
+            "deinterlace_mode": 0,
+            "deinterlace_field_order": 0,
+            "monitoring_type": 0,
+            "monitoring_enabled": false,
+            "canvas_uuid": "6c69626f-6273-4c00-9d88-c5136d61696e",
+            "private_settings": {}
+        },
+        {
+            "prev_ver": 553648128,
+            "name": "Left Choir",
+            "uuid": "f3c89dfc-e07b-4da1-81b4-95ec2611a25f",
+            "id": "scene",
+            "versioned_id": "scene",
+            "settings": {
+                "custom_size": false,
+                "id_counter": 2,
+                "items": [
+                    {
+                        "name": "Camera Left",
+                        "source_uuid": "8d29ab20-b88f-4336-8b5d-6918b9cc64e4",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 1,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777910232544,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Preset - Left Choir",
+                        "source_uuid": "69c6cf9c-0e16-4526-aa27-bcff6fb3c3d2",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 2,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777910232544,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    }
+                ]
+            },
+            "mixers": 0,
+            "sync": 0,
+            "flags": 0,
+            "volume": 1.0,
+            "balance": 0.5,
+            "enabled": true,
+            "muted": false,
+            "push-to-mute": false,
+            "push-to-mute-delay": 0,
+            "push-to-talk": false,
+            "push-to-talk-delay": 0,
+            "hotkeys": {
+                "OBSBasic.SelectScene": [],
+                "libobs.show_scene_item.1": [],
+                "libobs.hide_scene_item.1": [],
+                "libobs.show_scene_item.2": [],
+                "libobs.hide_scene_item.2": []
+            },
+            "deinterlace_mode": 0,
+            "deinterlace_field_order": 0,
+            "monitoring_type": 0,
+            "monitoring_enabled": false,
+            "canvas_uuid": "6c69626f-6273-4c00-9d88-c5136d61696e",
+            "private_settings": {}
+        },
+        {
+            "prev_ver": 553648128,
+            "name": "Right Pulpit",
+            "uuid": "ad3ebd36-8697-4c5e-86cd-3e5e6dc95d8b",
+            "id": "scene",
+            "versioned_id": "scene",
+            "settings": {
+                "custom_size": false,
+                "id_counter": 2,
+                "items": [
+                    {
+                        "name": "Camera Right",
+                        "source_uuid": "24105413-d5d7-4f3b-8c3f-a779956330bc",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 1,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777910232544,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Preset - Right Pulpit",
+                        "source_uuid": "29cfa266-46a9-43c0-8d44-61123cc09b7e",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 2,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777910232544,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    }
+                ]
+            },
+            "mixers": 0,
+            "sync": 0,
+            "flags": 0,
+            "volume": 1.0,
+            "balance": 0.5,
+            "enabled": true,
+            "muted": false,
+            "push-to-mute": false,
+            "push-to-mute-delay": 0,
+            "push-to-talk": false,
+            "push-to-talk-delay": 0,
+            "hotkeys": {
+                "OBSBasic.SelectScene": [],
+                "libobs.show_scene_item.1": [],
+                "libobs.hide_scene_item.1": [],
+                "libobs.show_scene_item.2": [],
+                "libobs.hide_scene_item.2": []
+            },
+            "deinterlace_mode": 0,
+            "deinterlace_field_order": 0,
+            "monitoring_type": 0,
+            "monitoring_enabled": false,
+            "canvas_uuid": "6c69626f-6273-4c00-9d88-c5136d61696e",
+            "private_settings": {}
+        },
+        {
+            "prev_ver": 553648128,
+            "name": "Right Chorister",
+            "uuid": "3e8cac54-9c71-4a47-bf92-051cffac778c",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
@@ -1666,8 +2448,8 @@
                         "private_settings": {}
                     },
                     {
-                        "name": "Camera Left",
-                        "source_uuid": "8d29ab20-b88f-4336-8b5d-6918b9cc64e4",
+                        "name": "Camera Right",
+                        "source_uuid": "24105413-d5d7-4f3b-8c3f-a779956330bc",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -1721,8 +2503,8 @@
                         "private_settings": {}
                     },
                     {
-                        "name": "Preset - Left Chorister Piano",
-                        "source_uuid": "57ce154f-3685-4c65-bbe3-d1f03731ebc5",
+                        "name": "Preset - Right Chorister",
+                        "source_uuid": "9b33070b-7c38-432f-9036-cc807691a581",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -1806,72 +2588,17 @@
         },
         {
             "prev_ver": 553648128,
-            "name": "Right Chorister",
-            "uuid": "d859fff0-df09-4cde-a97a-c3884b3ab663",
+            "name": "Right Rostrum",
+            "uuid": "361b2786-54e5-49a2-b3b6-09ce7209b4ba",
             "id": "scene",
             "versioned_id": "scene",
             "settings": {
                 "custom_size": false,
-                "id_counter": 3,
+                "id_counter": 2,
                 "items": [
                     {
-                        "name": "Color",
-                        "source_uuid": "433b0ea0-6b24-49d9-a41f-56794ded3674",
-                        "visible": true,
-                        "locked": false,
-                        "rot": 0.0,
-                        "scale_ref": {
-                            "x": 1920.0,
-                            "y": 1080.0
-                        },
-                        "align": 5,
-                        "bounds_type": 0,
-                        "bounds_align": 0,
-                        "bounds_crop": false,
-                        "crop_left": 0,
-                        "crop_top": 0,
-                        "crop_right": 0,
-                        "crop_bottom": 0,
-                        "id": 3,
-                        "group_item_backup": false,
-                        "pos": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "pos_rel": {
-                            "x": -1.7777777910232544,
-                            "y": -1.0
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0
-                        },
-                        "scale_rel": {
-                            "x": 1.0,
-                            "y": 1.0
-                        },
-                        "bounds": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "bounds_rel": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "scale_filter": "disable",
-                        "blend_method": "default",
-                        "blend_type": "normal",
-                        "show_transition": {
-                            "duration": 300
-                        },
-                        "hide_transition": {
-                            "duration": 300
-                        },
-                        "private_settings": {}
-                    },
-                    {
                         "name": "Camera Right",
-                        "source_uuid": "0989709f-dab3-469e-ae51-19e30b3706aa",
+                        "source_uuid": "24105413-d5d7-4f3b-8c3f-a779956330bc",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -1925,8 +2652,8 @@
                         "private_settings": {}
                     },
                     {
-                        "name": "Preset - Right Chorister Piano",
-                        "source_uuid": "2b6504f0-44ba-4854-b4d5-0e53492da19a",
+                        "name": "Preset - Right Rostrum",
+                        "source_uuid": "1131ecb7-f7c7-421d-bf04-a1c90a528827",
                         "visible": true,
                         "locked": false,
                         "rot": 0.0,
@@ -1994,8 +2721,741 @@
             "push-to-talk-delay": 0,
             "hotkeys": {
                 "OBSBasic.SelectScene": [],
-                "libobs.show_scene_item.3": [],
-                "libobs.hide_scene_item.3": [],
+                "libobs.show_scene_item.1": [],
+                "libobs.hide_scene_item.1": [],
+                "libobs.show_scene_item.2": [],
+                "libobs.hide_scene_item.2": []
+            },
+            "deinterlace_mode": 0,
+            "deinterlace_field_order": 0,
+            "monitoring_type": 0,
+            "monitoring_enabled": false,
+            "canvas_uuid": "6c69626f-6273-4c00-9d88-c5136d61696e",
+            "private_settings": {}
+        },
+        {
+            "prev_ver": 553648128,
+            "name": "Right Full Room",
+            "uuid": "0012baf7-c64f-4161-8c8f-b6c6b11facee",
+            "id": "scene",
+            "versioned_id": "scene",
+            "settings": {
+                "custom_size": false,
+                "id_counter": 2,
+                "items": [
+                    {
+                        "name": "Camera Right",
+                        "source_uuid": "24105413-d5d7-4f3b-8c3f-a779956330bc",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 1,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777910232544,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Preset - Right Full Room",
+                        "source_uuid": "90af654e-fdf0-4488-be52-eecff1af029e",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 2,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777910232544,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    }
+                ]
+            },
+            "mixers": 0,
+            "sync": 0,
+            "flags": 0,
+            "volume": 1.0,
+            "balance": 0.5,
+            "enabled": true,
+            "muted": false,
+            "push-to-mute": false,
+            "push-to-mute-delay": 0,
+            "push-to-talk": false,
+            "push-to-talk-delay": 0,
+            "hotkeys": {
+                "OBSBasic.SelectScene": [],
+                "libobs.show_scene_item.1": [],
+                "libobs.hide_scene_item.1": [],
+                "libobs.show_scene_item.2": [],
+                "libobs.hide_scene_item.2": []
+            },
+            "deinterlace_mode": 0,
+            "deinterlace_field_order": 0,
+            "monitoring_type": 0,
+            "monitoring_enabled": false,
+            "canvas_uuid": "6c69626f-6273-4c00-9d88-c5136d61696e",
+            "private_settings": {}
+        },
+        {
+            "prev_ver": 553648128,
+            "name": "Right Piano",
+            "uuid": "5df7a8d6-bdae-4275-9cc4-1590570caf11",
+            "id": "scene",
+            "versioned_id": "scene",
+            "settings": {
+                "custom_size": false,
+                "id_counter": 2,
+                "items": [
+                    {
+                        "name": "Camera Right",
+                        "source_uuid": "24105413-d5d7-4f3b-8c3f-a779956330bc",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 1,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777910232544,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Preset - Right Piano",
+                        "source_uuid": "fbda1338-faae-4664-9a5e-4ecccdb4a364",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 2,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777910232544,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    }
+                ]
+            },
+            "mixers": 0,
+            "sync": 0,
+            "flags": 0,
+            "volume": 1.0,
+            "balance": 0.5,
+            "enabled": true,
+            "muted": false,
+            "push-to-mute": false,
+            "push-to-mute-delay": 0,
+            "push-to-talk": false,
+            "push-to-talk-delay": 0,
+            "hotkeys": {
+                "OBSBasic.SelectScene": [],
+                "libobs.show_scene_item.1": [],
+                "libobs.hide_scene_item.1": [],
+                "libobs.show_scene_item.2": [],
+                "libobs.hide_scene_item.2": []
+            },
+            "deinterlace_mode": 0,
+            "deinterlace_field_order": 0,
+            "monitoring_type": 0,
+            "monitoring_enabled": false,
+            "canvas_uuid": "6c69626f-6273-4c00-9d88-c5136d61696e",
+            "private_settings": {}
+        },
+        {
+            "prev_ver": 553648128,
+            "name": "Right Speaker Close-up",
+            "uuid": "a0169e4b-4901-454b-877c-92d42da8d20d",
+            "id": "scene",
+            "versioned_id": "scene",
+            "settings": {
+                "custom_size": false,
+                "id_counter": 2,
+                "items": [
+                    {
+                        "name": "Camera Right",
+                        "source_uuid": "24105413-d5d7-4f3b-8c3f-a779956330bc",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 1,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777910232544,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Preset - Right Speaker Close-up",
+                        "source_uuid": "d80a932a-7349-4aee-8a96-b9b1bfbc0440",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 2,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777910232544,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    }
+                ]
+            },
+            "mixers": 0,
+            "sync": 0,
+            "flags": 0,
+            "volume": 1.0,
+            "balance": 0.5,
+            "enabled": true,
+            "muted": false,
+            "push-to-mute": false,
+            "push-to-mute-delay": 0,
+            "push-to-talk": false,
+            "push-to-talk-delay": 0,
+            "hotkeys": {
+                "OBSBasic.SelectScene": [],
+                "libobs.show_scene_item.1": [],
+                "libobs.hide_scene_item.1": [],
+                "libobs.show_scene_item.2": [],
+                "libobs.hide_scene_item.2": []
+            },
+            "deinterlace_mode": 0,
+            "deinterlace_field_order": 0,
+            "monitoring_type": 0,
+            "monitoring_enabled": false,
+            "canvas_uuid": "6c69626f-6273-4c00-9d88-c5136d61696e",
+            "private_settings": {}
+        },
+        {
+            "prev_ver": 553648128,
+            "name": "Right Organ",
+            "uuid": "a753585d-1c13-4594-a890-1d2c484ae041",
+            "id": "scene",
+            "versioned_id": "scene",
+            "settings": {
+                "custom_size": false,
+                "id_counter": 2,
+                "items": [
+                    {
+                        "name": "Camera Right",
+                        "source_uuid": "24105413-d5d7-4f3b-8c3f-a779956330bc",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 1,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777910232544,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Preset - Right Organ",
+                        "source_uuid": "539fa2e4-cb3c-4fe9-b84b-682522ecaf01",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 2,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777910232544,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    }
+                ]
+            },
+            "mixers": 0,
+            "sync": 0,
+            "flags": 0,
+            "volume": 1.0,
+            "balance": 0.5,
+            "enabled": true,
+            "muted": false,
+            "push-to-mute": false,
+            "push-to-mute-delay": 0,
+            "push-to-talk": false,
+            "push-to-talk-delay": 0,
+            "hotkeys": {
+                "OBSBasic.SelectScene": [],
+                "libobs.show_scene_item.1": [],
+                "libobs.hide_scene_item.1": [],
+                "libobs.show_scene_item.2": [],
+                "libobs.hide_scene_item.2": []
+            },
+            "deinterlace_mode": 0,
+            "deinterlace_field_order": 0,
+            "monitoring_type": 0,
+            "monitoring_enabled": false,
+            "canvas_uuid": "6c69626f-6273-4c00-9d88-c5136d61696e",
+            "private_settings": {}
+        },
+        {
+            "prev_ver": 553648128,
+            "name": "Right Choir",
+            "uuid": "e2526bcc-99f2-4d60-8017-f2f3d3693eb0",
+            "id": "scene",
+            "versioned_id": "scene",
+            "settings": {
+                "custom_size": false,
+                "id_counter": 2,
+                "items": [
+                    {
+                        "name": "Camera Right",
+                        "source_uuid": "24105413-d5d7-4f3b-8c3f-a779956330bc",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 1,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777910232544,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    },
+                    {
+                        "name": "Preset - Right Choir",
+                        "source_uuid": "bc534c1a-5c5a-4eef-8fc6-0a99fa00e56d",
+                        "visible": true,
+                        "locked": false,
+                        "rot": 0.0,
+                        "scale_ref": {
+                            "x": 1920.0,
+                            "y": 1080.0
+                        },
+                        "align": 5,
+                        "bounds_type": 0,
+                        "bounds_align": 0,
+                        "bounds_crop": false,
+                        "crop_left": 0,
+                        "crop_top": 0,
+                        "crop_right": 0,
+                        "crop_bottom": 0,
+                        "id": 2,
+                        "group_item_backup": false,
+                        "pos": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "pos_rel": {
+                            "x": -1.7777777910232544,
+                            "y": -1.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "scale_rel": {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        "bounds": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "bounds_rel": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "scale_filter": "disable",
+                        "blend_method": "default",
+                        "blend_type": "normal",
+                        "show_transition": {
+                            "duration": 300
+                        },
+                        "hide_transition": {
+                            "duration": 300
+                        },
+                        "private_settings": {}
+                    }
+                ]
+            },
+            "mixers": 0,
+            "sync": 0,
+            "flags": 0,
+            "volume": 1.0,
+            "balance": 0.5,
+            "enabled": true,
+            "muted": false,
+            "push-to-mute": false,
+            "push-to-mute-delay": 0,
+            "push-to-talk": false,
+            "push-to-talk-delay": 0,
+            "hotkeys": {
+                "OBSBasic.SelectScene": [],
                 "libobs.show_scene_item.1": [],
                 "libobs.hide_scene_item.1": [],
                 "libobs.show_scene_item.2": [],
@@ -2291,6 +3751,30 @@
             "name": "Right Chorister"
         },
         {
+            "name": "Left Piano"
+        },
+        {
+            "name": "Right Piano"
+        },
+        {
+            "name": "Left Speaker Close-up"
+        },
+        {
+            "name": "Right Speaker Close-up"
+        },
+        {
+            "name": "Left Organ"
+        },
+        {
+            "name": "Right Organ"
+        },
+        {
+            "name": "Left Choir"
+        },
+        {
+            "name": "Right Choir"
+        },
+        {
             "name": "Sacrament"
         }
     ],
@@ -2387,7 +3871,7 @@
                 "uuid": "1200bad1-6c44-4381-b504-19b41a1b50c6"
             },
             {
-                "uuid": "e6c66527-4dad-4a4a-84a4-1a988197f186"
+                "uuid": "4e41dd1f-c362-489c-8ae9-855e3179204a"
             }
         ]
     },
