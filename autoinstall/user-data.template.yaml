@@ -182,6 +182,7 @@ autoinstall:
       [Service]
       Type=oneshot
       Environment=TARGET_USER=broadcast
+      Environment=OBS_WEBSOCKET_PASSWORD=@OBS_WEBSOCKET_PASSWORD@
       ExecStart=/bin/bash -c 'test -d /opt/church-obs-setup || git clone @REPO_URL@ /opt/church-obs-setup'
       ExecStart=/opt/church-obs-setup/setup-obs-flatpak.sh --install --no-pin-dock --config=@OBS_CONFIG@
       ExecStartPost=/usr/bin/touch /var/lib/church-obs-firstboot.done

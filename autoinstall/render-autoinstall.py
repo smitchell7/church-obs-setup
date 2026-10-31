@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Fill user-data.template.yaml from secrets.env and write user-data (git-ignored)."""
 import pathlib
+import re
 import subprocess
 import sys
 
@@ -28,7 +29,7 @@ for key, val in values.items():
         if not val:
             missing.append(key)
         text = text.replace(token, val)
-leftover = sorted({w for w in text.split() if w.startswith("@") and w.endswith("@")})
+leftover = sorted(set(re.findall(r"@[A-Z][A-Z0-9_]*@", text)))
 if missing or leftover:
     sys.exit(f"Fill in these values in secrets.env: {', '.join(missing + leftover)}")
 # The installer only reads a file named exactly "user-data"; the named copy is for people.
