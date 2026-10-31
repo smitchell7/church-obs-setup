@@ -13,13 +13,12 @@ for line in (here / "secrets.env").read_text().splitlines():
         key, _, val = line.partition("=")
         values[key.strip()] = val.strip()
 
-for user in ("BROADCAST", "LIAHONA", "LEHI"):
-    password = values.get(f"PASSWORD_{user}", "")
-    if not password:
-        sys.exit(f"Set PASSWORD_{user} in secrets.env")
-    values[f"HASH_{user}"] = subprocess.run(
-        ["openssl", "passwd", "-6", "-stdin"], input=password, capture_output=True, text=True, check=True
-    ).stdout.strip()
+password = values.get("PASSWORD_BROADCAST", "")
+if not password:
+    sys.exit("Set PASSWORD_BROADCAST in secrets.env")
+values["HASH_BROADCAST"] = subprocess.run(
+    ["openssl", "passwd", "-6", "-stdin"], input=password, capture_output=True, text=True, check=True
+).stdout.strip()
 
 text = (here / "user-data.template.yaml").read_text()
 missing = []

@@ -42,12 +42,8 @@ autoinstall:
 
     - curtin in-target -- systemctl enable avahi-daemon
 
-    # User accounts. 'broadcast' (created above, auto-login) is the only one with sudo.
+    # 'broadcast' (created above, auto-login) is the only user account and has sudo.
     - curtin in-target -- usermod -aG sudo broadcast
-    - curtin in-target -- useradd -m -s /bin/bash -c Liahona liahona
-    - echo 'liahona:@HASH_LIAHONA@' | chroot /target chpasswd -e
-    - curtin in-target -- useradd -m -s /bin/bash -c Lehi lehi
-    - echo 'lehi:@HASH_LEHI@' | chroot /target chpasswd -e
 
     # Wi-Fi networks
     - |
