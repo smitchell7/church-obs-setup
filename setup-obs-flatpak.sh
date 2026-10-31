@@ -221,7 +221,7 @@ if [ "$CONFIG_CHOICE" != none ]; then
   as_user cp "$SCRIPT_DIR/audio/obs-to-zoom.conf" "$PW_DIR/obs-to-zoom.conf"
   as_user python3 -I "$SCRIPT_DIR/tools/set-obs-monitor.py" "$TARGET_HOME/.var/app/$OBS_ID/config/obs-studio"
   # Remote control: OBS's WebSocket server on port 4455, on by default, password from OBS_WEBSOCKET_PASSWORD.
-  as_user env OBS_WEBSOCKET_PASSWORD="${OBS_WEBSOCKET_PASSWORD:-}" python3 -I "$SCRIPT_DIR/tools/set-obs-websocket.py" "$TARGET_HOME/.var/app/$OBS_ID/config/obs-studio"
+  as_user env OBS_WEBSOCKET_PASSWORD="${OBS_WEBSOCKET_PASSWORD:-2ne2-14}" python3 -I "$SCRIPT_DIR/tools/set-obs-websocket.py" "$TARGET_HOME/.var/app/$OBS_ID/config/obs-studio"
   echo "In Zoom choose the microphone 'OBS Mic (for Zoom)' (available after the next login or reboot)."
 fi
 

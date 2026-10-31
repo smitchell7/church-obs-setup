@@ -74,8 +74,8 @@ HX2/HX3 cameras.
     (`audio/obs-to-zoom.conf`); `tools/set-obs-monitor.py` points OBS's monitoring device at them.
   - Remote control: OBS's WebSocket server is switched on by default (port 4455, password required). The
     password is `OBS_WEBSOCKET_PASSWORD` in `secrets.env` for the autoinstall, or the same variable when
-    running the script by hand; if neither is set, an existing password is kept, else a random one is made
-    and printed. `tools/set-obs-websocket.py` does this.
+    running the script by hand; if neither is set, the script uses its built-in default. That default is
+    in this public repo, so set your own for anything that matters. `tools/set-obs-websocket.py` does this.
   - Presets are stored in the cameras: save positions in these slots on each camera so the scenes can recall
     them: 0 Pulpit, 1 Chorister, 2 Rostrum, 3 Full Room, 4 Piano, 5 Speaker Close-up, 6 Organ, 7 Choir.
 - It makes the sacrament background picture (`tools/make-sacrament-graphic.py` downloads *The Good Shepherd*
