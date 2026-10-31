@@ -31,5 +31,9 @@ for key, val in values.items():
 leftover = sorted({w for w in text.split() if w.startswith("@") and w.endswith("@")})
 if missing or leftover:
     sys.exit(f"Fill in these values in secrets.env: {', '.join(missing + leftover)}")
-(here / "user-data").write_text(text)
-print(f"Wrote {here / 'user-data'}. Serve it with the installer; do not commit it.")
+# The installer only reads a file named exactly "user-data"; the named copy is for people.
+named = f"{values['HOSTNAME_PREFIX']}-ubuntu-autoinstall.yaml"
+for name in ("user-data", named):
+    (here / name).write_text(text)
+print(f"Wrote {here / 'user-data'} (for the installer, with an empty meta-data next to it) and {here / named}.")
+print("Both contain secrets; do not commit them.")

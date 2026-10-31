@@ -17,3 +17,4 @@ tmp-cap/
 # rendered autoinstall output (contains secrets)
 autoinstall/secrets.env
 autoinstall/user-data
+autoinstall/*-ubuntu-autoinstall.yaml
