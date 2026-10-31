@@ -34,6 +34,11 @@ These are the key objectives:
 sudo ./setup-obs-flatpak.sh
 ```
 
+The script can be run again at any time: it updates what is installed and leaves the rest alone. To only
+refresh the configuration (scenes, audio, Zoom microphone) without touching the software, run
+`sudo ./setup-obs-flatpak.sh --config-only --config=dual-camera` (close OBS first). Your previous scene
+file is saved as `*.bak` whenever it changes.
+
 This installs OBS Studio, DistroAV (NDI) and the obs-ptz PTZ Controls extension system-wide,
 lets OBS reach the local network, and installs the FFmpeg libraries that NDI needs to decode
 HX2/HX3 cameras.
@@ -56,6 +61,11 @@ HX2/HX3 cameras.
     Sound Blaster, else any USB input, else the system default (`AUDIO_DEVICE=name` forces one; at first boot
     there is no desktop session, so it usually falls back to default: set the device on the source in OBS).
     The Sacrament scene plays the music track and has no microphone.
+  - Zoom: OBS monitors its audio (the USB input and the sacrament music) into a virtual device, "OBS to Zoom",
+    and a virtual microphone "OBS Mic (for Zoom)" carries it. In Zoom pick that microphone. Ubuntu already
+    uses PipeWire, which speaks the PulseAudio protocol, so PulseAudio itself is not needed (the installer
+    adds `pulseaudio-utils` for `pactl`). The virtual devices appear after the next login or reboot
+    (`audio/obs-to-zoom.conf`); `tools/set-obs-monitor.py` points OBS's monitoring device at them.
   - Presets are stored in the cameras: save positions in these slots on each camera so the scenes can recall
     them: 0 Pulpit, 1 Chorister, 2 Rostrum, 3 Full Room, 4 Piano, 5 Speaker Close-up, 6 Organ, 7 Choir.
 - It makes the sacrament background picture (`tools/make-sacrament-graphic.py` downloads *The Good Shepherd*

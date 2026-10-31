@@ -5,6 +5,9 @@
 #     (built by https://github.com/smitchell7/obs-ptz, release v0.0.1-pre1)
 #
 # Usage:  sudo ./setup-obs-flatpak.sh [--pin-dock | --no-pin-dock]
+# Safe to run again at any time: whatever is already installed is left alone or updated.
+#   --config-only               skip installing/updating software and just refresh the OBS
+#                               configuration (scenes, audio, Zoom microphone)
 #   --config=NAME / --no-config  install the OBS scenes and camera setup in configs/NAME
 #                               (without either, it asks when run in a terminal)
 #   --pin-dock / --no-pin-dock  answer the "add OBS to the dock?" question up front
@@ -24,6 +27,7 @@ CODECS_BRANCH=25.08-extra
 
 PIN_DOCK=ask
 CONFIG_CHOICE=ask
+CONFIG_ONLY=no
 DOCK_SCHEMA_FILE=${DOCK_SCHEMA_FILE:-/usr/share/glib-2.0/schemas/50_church_defaults.gschema.override}
 for arg in "$@"; do
   case "$arg" in
@@ -31,6 +35,7 @@ for arg in "$@"; do
     --no-pin-dock) PIN_DOCK=no ;;
     --config=*) CONFIG_CHOICE=${arg#--config=} ;;
     --no-config) CONFIG_CHOICE=none ;;
+    --config-only) CONFIG_ONLY=yes ;;
     *) echo "Unknown option: $arg" >&2; exit 1 ;;
   esac
 done
@@ -49,14 +54,18 @@ TARGET_HOME=$(getent passwd "$TARGET_USER" | cut -d: -f6)
 [ -d "$TARGET_HOME" ] || { echo "No home directory for $TARGET_USER" >&2; exit 1; }
 as_user() { sudo -u "$TARGET_USER" -H "$@"; }
 
+if [ "$CONFIG_ONLY" = yes ]; then
+  echo "==> --config-only: not touching the installed software"
+else
 echo "==> [1/6] Installing Flatpak and adding the Flathub remote"
 apt-get update -y
-apt-get install -y flatpak python3-pil curl
+apt-get install -y flatpak python3-pil curl pulseaudio-utils
 flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
 echo "==> [2/6] Installing OBS Studio and DistroAV (system-wide)"
-flatpak install --system -y flathub "$OBS_ID"
-flatpak install --system -y flathub "$OBS_ID.Plugin.DistroAV"
+# --or-update installs what is missing and updates what is already there
+flatpak install --system -y --or-update flathub "$OBS_ID"
+flatpak install --system -y --or-update flathub "$OBS_ID.Plugin.DistroAV"
 
 echo "==> [3/6] Letting OBS reach the local network and Avahi (mDNS camera discovery)"
 flatpak override --system --share=network "$OBS_ID"
@@ -68,10 +77,18 @@ if [ -z "$BUNDLE" ]; then
   BUNDLE=$(ls "$SCRIPT_DIR"/vendor/$PTZ_ASSET 2>/dev/null | tail -n1 || true)
 fi
 [ -f "$BUNDLE" ] || { echo "No obs-ptz bundle found in $SCRIPT_DIR/vendor; set PTZ_BUNDLE=/path/to/file" >&2; exit 1; }
-flatpak install --system -y --bundle "$BUNDLE"
+# Reinstalling an unchanged bundle fails, so remember which one is installed.
+BUNDLE_STAMP=/var/lib/church-obs-ptz-bundle.sha256
+BUNDLE_SUM=$(sha256sum "$BUNDLE" | cut -d' ' -f1)
+if [ "$(cat "$BUNDLE_STAMP" 2>/dev/null || true)" = "$BUNDLE_SUM" ]; then
+  echo "obs-ptz is already installed from this bundle."
+else
+  flatpak install --system -y --bundle "$BUNDLE"
+  echo "$BUNDLE_SUM" > "$BUNDLE_STAMP"
+fi
 
 echo "==> [5/6] Putting the NDI HX decoder libraries where OBS can find them"
-flatpak install --system -y flathub \
+flatpak install --system -y --or-update flathub \
   "org.freedesktop.Platform//$FFMPEG_RUNTIME_BRANCH" \
   "org.freedesktop.Platform.codecs-extra//$CODECS_BRANCH"
 CODECS=$(flatpak info --system --show-location org.freedesktop.Platform.codecs-extra "$CODECS_BRANCH")/files/lib
@@ -102,6 +119,7 @@ if [ -n "$MISSING" ]; then
   echo "WARNING: NDI HX decoding will not work, unresolved libraries:" >&2
   echo "$MISSING" >&2
 fi
+fi # not --config-only
 
 # OBS scene collection and camera setup (configs/<name>/: single-camera or dual-camera).
 echo "==> Choosing the OBS configuration"
@@ -138,12 +156,30 @@ if [ "$CONFIG_CHOICE" != none ]; then
     [ -n "$AUDIO_DEVICE" ] || AUDIO_DEVICE=default
   fi
   echo "Audio input for OBS: $AUDIO_DEVICE (change it on the 'USB Audio' source in OBS if this is wrong)"
+  if pgrep -u "$TARGET_USER" -f "$OBS_ID" >/dev/null; then
+    echo "WARNING: OBS is running; it will overwrite these changes when it exits. Close OBS and run this again." >&2
+  fi
   for f in "$CONFIG_SRC"/*.json; do
     dest="$SCENES_DIR/$(basename "$f")"
-    [ -e "$dest" ] && as_user cp "$dest" "$dest.$(date +%Y%m%d-%H%M%S).bak"
-    sed -e "s|@HOME@|$TARGET_HOME|g" -e "s|@AUDIO_DEVICE@|$AUDIO_DEVICE|g" "$f" | as_user tee "$dest" >/dev/null
+    rendered=$(mktemp)
+    sed -e "s|@HOME@|$TARGET_HOME|g" -e "s|@AUDIO_DEVICE@|$AUDIO_DEVICE|g" "$f" > "$rendered"
+    if [ -e "$dest" ] && cmp -s "$rendered" "$dest"; then
+      echo "$(basename "$f") is already up to date."
+    else
+      [ -e "$dest" ] && as_user cp "$dest" "$dest.$(date +%Y%m%d-%H%M%S).bak"
+      as_user tee "$dest" < "$rendered" >/dev/null
+    fi
+    rm -f "$rendered"
   done
   echo "Installed the '$CONFIG_CHOICE' scene collection. In OBS choose it from the Scene Collection menu."
+
+  # Zoom audio: a virtual "OBS Mic (for Zoom)" microphone fed by OBS's audio monitoring (PipeWire's
+  # PulseAudio layer is already on Ubuntu; only the pactl tool is added).
+  PW_DIR="$TARGET_HOME/.config/pipewire/pipewire.conf.d"
+  as_user mkdir -p "$PW_DIR"
+  as_user cp "$SCRIPT_DIR/audio/obs-to-zoom.conf" "$PW_DIR/obs-to-zoom.conf"
+  as_user python3 -I "$SCRIPT_DIR/tools/set-obs-monitor.py" "$TARGET_HOME/.var/app/$OBS_ID/config/obs-studio"
+  echo "In Zoom choose the microphone 'OBS Mic (for Zoom)' (available after the next login or reboot)."
 fi
 
 # Sacrament scene music: piano accompaniment of "Bread of Life, Living Water" (church hymn
@@ -155,8 +191,12 @@ MUSIC_DIR="$TARGET_HOME/Documents/sacrament"
 MUSIC_FILE="$MUSIC_DIR/bread-of-life-living-water-piano.mp3"
 as_user mkdir -p "$MUSIC_DIR"
 # The painting (The Good Shepherd) is downloaded and the message is drawn on it; neither is kept in the repo.
-as_user python3 -I "$SCRIPT_DIR/tools/make-sacrament-graphic.py" --out "$MUSIC_DIR/sacrament-graphic.png" \
-  || echo "WARNING: could not make the sacrament graphic; see tools/make-sacrament-graphic.py" >&2
+if [ "$CONFIG_ONLY" = yes ] && [ -s "$MUSIC_DIR/sacrament-graphic.png" ]; then
+  echo "The sacrament graphic is already there."
+else
+  as_user python3 -I "$SCRIPT_DIR/tools/make-sacrament-graphic.py" --out "$MUSIC_DIR/sacrament-graphic.png" \
+    || echo "WARNING: could not make the sacrament graphic; see tools/make-sacrament-graphic.py" >&2
+fi
 if [ ! -s "$MUSIC_FILE" ]; then
   # The page lists each recording's URL; pick the piano accompaniment (not guitar/vocal).
   MUSIC_URL=$(curl -fsSL -A 'Mozilla/5.0' "$MUSIC_PAGE" 2>/dev/null |
