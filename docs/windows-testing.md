@@ -103,6 +103,8 @@ Record "CABLE Output (VB-Audio Virtual Cable)" (what Zoom hears) with ffmpeg whi
 3. Back to Sacrament: the music starts again; with the music's monitoring turned off for a moment, the
    recording is silent (no microphone under the music).
 4. In Zoom: the microphone list has "CABLE Output (VB-Audio Virtual Cable)" and its level meter moves.
+5. In Zoom, with "Original sound for musicians" on, the sacrament music is heard in a test meeting (with
+   noise suppression instead, it is mostly cut out).
 
 ### E. Run again on a set-up computer
 

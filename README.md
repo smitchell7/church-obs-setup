@@ -134,11 +134,23 @@ computer always runs the current version. Run it again at any time to update; cl
   again to finish;
 - installs the scene collection (`-Config`, else it asks; `-NoConfig` skips it; an existing file is saved as
   `*.bak`). The "USB Audio" source becomes a Windows (WASAPI) input on the Sound Blaster, else a USB input,
-  else the default input; `-AudioDevice "part of its name"` picks another;
+  else (with a warning) another real input, never "NDI Webcam Audio", whose sound is poor; plug the USB
+  input in before running it. `-AudioDevice "part of its name"` picks another;
 - points OBS's audio monitoring at "CABLE Input (VB-Audio Virtual Cable)", so the USB input and the
   sacrament music go to Zoom: in Zoom pick the microphone **CABLE Output (VB-Audio Virtual Cable)**;
 - adds a firewall rule for NDI, makes the sacrament graphic, and builds the sacrament playlist from
   `audio\sacrament-playlist.txt` (`tools\make-sacrament-playlist.ps1`) in `Documents\sacrament`.
+
+**By hand, once per computer:**
+
+- Installing VB-CABLE can make "CABLE Input" the Windows default speaker, so the computer goes silent and
+  everything it plays reaches Zoom. Set the speaker back (taskbar speaker icon, e.g. "Speakers (Realtek
+  Audio)"); OBS's monitoring stays on CABLE Input.
+- Zoom, Settings > Audio: **Microphone** "CABLE Output (VB-Audio Virtual Cable)"; **Speaker** the
+  computer's speakers, never "CABLE Input"; and **Original sound for musicians** turned on (in the meeting,
+  the "Original sound" button must be on). With Zoom's background noise suppression instead, the organ,
+  piano and held notes are removed as noise and the music barely comes through. If the option is missing,
+  the Zoom account's web settings (zoom.us > Settings > Audio) must allow it. Camera: "OBS Virtual Camera".
 
 Options: `-Branch` (default `windows`), `-RepoUrl`, `-RepoDir`. Not covered on Windows: the GNOME dock, the
 OBS WebSocket password, and the Ubuntu autoinstall. Testing it, and preparing a laptop to test on:
