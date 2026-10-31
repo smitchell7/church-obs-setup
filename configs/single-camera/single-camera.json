@@ -322,7 +322,7 @@
                             },
                             {
                                 "id": "camera:6",
-                                "name": "Choir"
+                                "name": "Piano and Pulpit"
                             },
                             {
                                 "id": "camera:7",
@@ -330,7 +330,7 @@
                             },
                             {
                                 "id": "camera:8",
-                                "name": "Piano and Pulpit"
+                                "name": "Choir"
                             }
                         ],
                         "host": "192.168.111.245",
@@ -615,7 +615,7 @@
             "versioned_id": "ptz_action_source",
             "settings": {
                 "action": 2,
-                "preset_id": "camera:6",
+                "preset_id": "camera:8",
                 "device_uuid": "1200bad1-6c44-4381-b504-19b41a1b50c6"
             },
             "mixers": 0,
@@ -644,7 +644,7 @@
             "versioned_id": "ptz_action_source",
             "settings": {
                 "action": 2,
-                "preset_id": "camera:8",
+                "preset_id": "camera:6",
                 "device_uuid": "1200bad1-6c44-4381-b504-19b41a1b50c6"
             },
             "mixers": 0,
@@ -3537,13 +3537,13 @@
             "name": "Speaker Close-up"
         },
         {
-            "name": "Choir"
+            "name": "Piano and Pulpit"
         },
         {
             "name": "Organ"
         },
         {
-            "name": "Piano and Pulpit"
+            "name": "Choir"
         },
         {
             "name": "Sacrament"
