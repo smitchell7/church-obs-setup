@@ -4,10 +4,11 @@
 #   - obs-ptz (PTZ Controls) as a Flatpak extension, from the bundle in vendor/
 #     (built by https://github.com/smitchell7/obs-ptz, release v0.0.1-pre1)
 #
-# Usage:  sudo ./setup-obs-flatpak.sh [--pin-dock | --no-pin-dock]
-# Safe to run again at any time: whatever is already installed is left alone or updated.
-#   --config-only               skip installing/updating software and just refresh the OBS
-#                               configuration (scenes, audio, Zoom microphone)
+# Usage:  sudo ./setup-obs-flatpak.sh [--install] [--config=NAME | --no-config] [--pin-dock | --no-pin-dock]
+# Safe to run again at any time. By default it installs no software and only refreshes the OBS
+# configuration (scenes, audio, Zoom microphone).
+#   --install                   also install or update the software (OBS, DistroAV, obs-ptz, NDI
+#                               decoder libraries); needed on a new computer
 #   --config=NAME / --no-config  install the OBS scenes and camera setup in configs/NAME
 #                               (without either, it asks when run in a terminal)
 #   --pin-dock / --no-pin-dock  answer the "add OBS to the dock?" question up front
@@ -27,7 +28,7 @@ CODECS_BRANCH=25.08-extra
 
 PIN_DOCK=ask
 CONFIG_CHOICE=ask
-CONFIG_ONLY=no
+INSTALL=no
 DOCK_SCHEMA_FILE=${DOCK_SCHEMA_FILE:-/usr/share/glib-2.0/schemas/50_church_defaults.gschema.override}
 for arg in "$@"; do
   case "$arg" in
@@ -35,7 +36,7 @@ for arg in "$@"; do
     --no-pin-dock) PIN_DOCK=no ;;
     --config=*) CONFIG_CHOICE=${arg#--config=} ;;
     --no-config) CONFIG_CHOICE=none ;;
-    --config-only) CONFIG_ONLY=yes ;;
+    --install) INSTALL=yes ;;
     *) echo "Unknown option: $arg" >&2; exit 1 ;;
   esac
 done
@@ -54,8 +55,8 @@ TARGET_HOME=$(getent passwd "$TARGET_USER" | cut -d: -f6)
 [ -d "$TARGET_HOME" ] || { echo "No home directory for $TARGET_USER" >&2; exit 1; }
 as_user() { sudo -u "$TARGET_USER" -H "$@"; }
 
-if [ "$CONFIG_ONLY" = yes ]; then
-  echo "==> --config-only: not touching the installed software"
+if [ "$INSTALL" != yes ]; then
+  echo "==> Not installing software (add --install to install or update it)"
 else
 echo "==> [1/6] Installing Flatpak and adding the Flathub remote"
 apt-get update -y
@@ -119,7 +120,7 @@ if [ -n "$MISSING" ]; then
   echo "WARNING: NDI HX decoding will not work, unresolved libraries:" >&2
   echo "$MISSING" >&2
 fi
-fi # not --config-only
+fi # --install
 
 # OBS scene collection and camera setup (configs/<name>/: single-camera or dual-camera).
 echo "==> Choosing the OBS configuration"
@@ -191,7 +192,7 @@ MUSIC_DIR="$TARGET_HOME/Documents/sacrament"
 MUSIC_FILE="$MUSIC_DIR/bread-of-life-living-water-piano.mp3"
 as_user mkdir -p "$MUSIC_DIR"
 # The painting (The Good Shepherd) is downloaded and the message is drawn on it; neither is kept in the repo.
-if [ "$CONFIG_ONLY" = yes ] && [ -s "$MUSIC_DIR/sacrament-graphic.png" ]; then
+if [ "$INSTALL" != yes ] && [ -s "$MUSIC_DIR/sacrament-graphic.png" ]; then
   echo "The sacrament graphic is already there."
 else
   as_user python3 -I "$SCRIPT_DIR/tools/make-sacrament-graphic.py" --out "$MUSIC_DIR/sacrament-graphic.png" \

@@ -31,15 +31,20 @@ These are the key objectives:
 ## Install OBS (Flatpak) on a new computer
 
 ```bash
-sudo ./setup-obs-flatpak.sh
+sudo ./setup-obs-flatpak.sh --install --config=dual-camera   # new computer: software + configuration
+sudo ./setup-obs-flatpak.sh --config=dual-camera             # later: only refresh the configuration
 ```
 
-The script can be run again at any time: it updates what is installed and leaves the rest alone. To only
-refresh the configuration (scenes, audio, Zoom microphone) without touching the software, run
-`sudo ./setup-obs-flatpak.sh --config-only --config=dual-camera` (close OBS first). Your previous scene
-file is saved as `*.bak` whenever it changes.
+The script can be run again at any time. Without `--install` it touches no software and only refreshes the
+configuration (scenes, audio, Zoom microphone); close OBS first. Your previous scene file is saved as `*.bak`
+whenever it changes.
 
-This installs OBS Studio, DistroAV (NDI) and the obs-ptz PTZ Controls extension system-wide,
+Options: `--install` (install or update the software), `--config=single-camera|dual-camera` or `--no-config`
+(without either it asks in a terminal), `--pin-dock` or `--no-pin-dock` (add OBS to the dock). Environment:
+`TARGET_USER=name` (default: whoever ran sudo), `AUDIO_DEVICE=name` (force the OBS audio input),
+`PTZ_BUNDLE=/path/file.flatpak` (a different obs-ptz build).
+
+`--install` installs OBS Studio, DistroAV (NDI) and the obs-ptz PTZ Controls extension system-wide,
 lets OBS reach the local network, and installs the FFmpeg libraries that NDI needs to decode
 HX2/HX3 cameras.
 
