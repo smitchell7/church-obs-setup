@@ -3051,7 +3051,7 @@
         },
         {
             "prev_ver": 553648128,
-            "name": "Hold Position",
+            "name": "Joystick",
             "uuid": "106421f3-fa5d-4cb2-8f0a-1d89e322fc46",
             "id": "scene",
             "versioned_id": "scene",
@@ -3516,7 +3516,7 @@
     "groups": [],
     "scene_order": [
         {
-            "name": "Hold Position"
+            "name": "Joystick"
         },
         {
             "name": "Pulpit - p0"
