@@ -71,12 +71,17 @@ HX2/HX3 cameras.
     there is no desktop session, so it usually falls back to default: set the device on the source in OBS).
     The Sacrament scene plays the sacrament music instead and has no microphone, so changing to it switches
     the Zoom audio from the USB input to the music, and changing back switches it again.
-  - Zoom: OBS monitors its audio (the USB input and the sacrament music) into a virtual device, "OBS to Zoom",
-    and a virtual microphone "OBS Mic (for Zoom)" carries it. In Zoom pick that microphone. Ubuntu already
+  - Zoom: OBS monitors its audio (the USB input and the sacrament music) into a virtual speaker, "OBS to Zoom"
+    (`audio/obs-to-zoom.conf`), and a virtual microphone, "OBS Mic (for Zoom)", carries it
+    (`audio/obs-mic.conf`, a remap of the speaker's monitor). In Zoom pick that microphone. Ubuntu already
     uses PipeWire, which speaks the PulseAudio protocol, so PulseAudio itself is not needed (the installer
-    adds `pulseaudio-utils` for `pactl`). PipeWire only reads `audio/obs-to-zoom.conf` when it starts, so if
-    the user is logged in the installer restarts PipeWire to bring the devices up (audio drops for a moment);
-    otherwise they appear after the next login. `tools/set-obs-monitor.py` points OBS's monitoring device at them.
+    adds `pulseaudio-utils` for `pactl`). PipeWire only reads these files when it starts, so if the user is
+    logged in the installer restarts PipeWire to bring the devices up (audio drops for a moment); otherwise
+    they appear after the next login. `tools/set-obs-monitor.py` points OBS's monitoring device at the speaker.
+  - Both audio sources have monitoring set to "Monitor and Output". OBS 33 needs `monitoring_enabled: true` in
+    the scene file as well as `monitoring_type: 2`; with only the type set, nothing is sent to Zoom. If Zoom
+    hears nothing, check Edit > Advanced Audio Properties in OBS: "USB Audio" and "Sacrament Music" must say
+    "Monitor and Output".
   - Remote control: OBS's WebSocket server is switched on by default (port 4455, password required). The
     password is `OBS_WEBSOCKET_PASSWORD` in `secrets.env` for the autoinstall, or the same variable when
     running the script by hand; if neither is set, the script uses its built-in default. That default is

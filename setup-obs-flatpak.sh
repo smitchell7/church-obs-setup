@@ -219,13 +219,16 @@ if [ "$CONFIG_CHOICE" != none ]; then
   PW_DIR="$TARGET_HOME/.config/pipewire/pipewire.conf.d"
   as_user mkdir -p "$PW_DIR"
   as_user cp "$SCRIPT_DIR/audio/obs-to-zoom.conf" "$PW_DIR/obs-to-zoom.conf"
+  PWP_DIR="$TARGET_HOME/.config/pipewire/pipewire-pulse.conf.d"
+  as_user mkdir -p "$PWP_DIR"
+  as_user cp "$SCRIPT_DIR/audio/obs-mic.conf" "$PWP_DIR/obs-mic.conf"
   as_user python3 -I "$SCRIPT_DIR/tools/set-obs-monitor.py" "$TARGET_HOME/.var/app/$OBS_ID/config/obs-studio"
   # Remote control: OBS's WebSocket server on port 4455, on by default, password from OBS_WEBSOCKET_PASSWORD.
   as_user env OBS_WEBSOCKET_PASSWORD="${OBS_WEBSOCKET_PASSWORD:-2ne2-14}" python3 -I "$SCRIPT_DIR/tools/set-obs-websocket.py" "$TARGET_HOME/.var/app/$OBS_ID/config/obs-studio"
-  # PipeWire reads its drop-ins at start. If the user is logged in and the virtual sink is not there yet,
-  # restart PipeWire so the microphone appears now instead of after the next login (audio drops briefly).
-  USER_RT="/run/user/$TARGET_UID"
-  if [ -S "$USER_RT/bus" ] && ! as_user env XDG_RUNTIME_DIR="$USER_RT" pactl list short sinks 2>/dev/null | grep -q obs_zoom; then
+  # PipeWire reads its drop-ins at start. If the user is logged in and Zoom cannot see the microphone yet
+  # (source obs_mic), restart PipeWire so it appears now instead of after the next login (audio drops briefly).
+  USER_RT="/run/user/$(id -u "$TARGET_USER")"
+  if [ -S "$USER_RT/bus" ] && ! as_user env XDG_RUNTIME_DIR="$USER_RT" pactl list short sources 2>/dev/null | cut -f2 | grep -qx obs_mic; then
     echo "Restarting PipeWire so the 'OBS Mic (for Zoom)' microphone appears (audio drops for a moment)"
     as_user env XDG_RUNTIME_DIR="$USER_RT" DBUS_SESSION_BUS_ADDRESS="unix:path=$USER_RT/bus" \
       systemctl --user restart pipewire pipewire-pulse wireplumber \
