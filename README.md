@@ -71,13 +71,22 @@ HX2/HX3 cameras.
     there is no desktop session, so it usually falls back to default: set the device on the source in OBS).
     The Sacrament scene plays the sacrament music instead and has no microphone, so changing to it switches
     the Zoom audio from the USB input to the music, and changing back switches it again.
-  - Zoom: OBS monitors its audio (the USB input and the sacrament music) into a virtual speaker, "OBS to Zoom"
-    (`audio/obs-to-zoom.conf`), and a virtual microphone, "OBS Mic (for Zoom)", carries it
-    (`audio/obs-mic.conf`, a remap of the speaker's monitor). In Zoom pick that microphone. Ubuntu already
-    uses PipeWire, which speaks the PulseAudio protocol, so PulseAudio itself is not needed (the installer
-    adds `pulseaudio-utils` for `pactl`). PipeWire only reads these files when it starts, so if the user is
-    logged in the installer restarts PipeWire to bring the devices up (audio drops for a moment); otherwise
-    they appear after the next login. `tools/set-obs-monitor.py` points OBS's monitoring device at the speaker.
+  - Zoom: OBS monitors its audio (the USB input and the sacrament music) into a virtual speaker that only OBS
+    uses, "OBS Monitoring (not for Zoom)" (`audio/obs-to-zoom.conf`), and a virtual microphone, "OBS Mic (for
+    Zoom)", carries it (`audio/obs-mic.conf`, a remap of the speaker's monitor). The installer makes that
+    microphone the system default. Ubuntu already uses PipeWire, which speaks the PulseAudio protocol, so
+    PulseAudio itself is not needed (the installer adds `pulseaudio-utils` for `pactl`). PipeWire only reads
+    these files when it starts, so if the user is logged in the installer restarts PipeWire when they change
+    (audio drops for a moment; not during a Zoom call); otherwise they apply after the next login.
+    `tools/set-obs-monitor.py` points OBS's monitoring device at the speaker.
+  - **Zoom settings, once per computer** (Zoom keeps these itself, so the installer cannot set them):
+    Settings > Audio: **Microphone** "OBS Mic (for Zoom)" (or "Same as System"); **Speaker** the computer's
+    speakers or headphones, never "OBS Monitoring (not for Zoom)", which would send the meeting back into the
+    microphone; under Music and Professional Audio, tick **Show in-meeting option to enable "Original sound
+    for musicians"**, then in a meeting click **Original sound for musicians: Off** at the top left to turn it
+    on (recent Zoom versions remember it; check at the start of each meeting). Without it Zoom's noise
+    suppression chops up the music. Menu names vary a little between Zoom versions. If the
+    option is missing, the Zoom account's web settings (zoom.us > Settings > Audio) must allow it.
   - Both audio sources have monitoring set to "Monitor and Output". OBS 33 needs `monitoring_enabled: true` in
     the scene file as well as `monitoring_type: 2`; with only the type set, nothing is sent to Zoom. If Zoom
     hears nothing, check Edit > Advanced Audio Properties in OBS: "USB Audio" and "Sacrament Music" must say

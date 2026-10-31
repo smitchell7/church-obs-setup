@@ -236,24 +236,36 @@ if [ "$CONFIG_CHOICE" != none ]; then
   # Zoom audio: a virtual "OBS Mic (for Zoom)" microphone fed by OBS's audio monitoring (PipeWire's
   # PulseAudio layer is already on Ubuntu; only the pactl tool is added).
   PW_DIR="$TARGET_HOME/.config/pipewire/pipewire.conf.d"
-  as_user mkdir -p "$PW_DIR"
-  as_user cp "$SCRIPT_DIR/audio/obs-to-zoom.conf" "$PW_DIR/obs-to-zoom.conf"
   PWP_DIR="$TARGET_HOME/.config/pipewire/pipewire-pulse.conf.d"
-  as_user mkdir -p "$PWP_DIR"
+  PW_BEFORE=$(cat "$PW_DIR/obs-to-zoom.conf" "$PWP_DIR/obs-mic.conf" 2>/dev/null | md5sum)
+  as_user mkdir -p "$PW_DIR" "$PWP_DIR"
+  as_user cp "$SCRIPT_DIR/audio/obs-to-zoom.conf" "$PW_DIR/obs-to-zoom.conf"
   as_user cp "$SCRIPT_DIR/audio/obs-mic.conf" "$PWP_DIR/obs-mic.conf"
+  PW_AFTER=$(cat "$PW_DIR/obs-to-zoom.conf" "$PWP_DIR/obs-mic.conf" | md5sum)
   as_user python3 -I "$SCRIPT_DIR/tools/set-obs-monitor.py" "$TARGET_HOME/.var/app/$OBS_ID/config/obs-studio"
   # Remote control: OBS's WebSocket server on port 4455, on by default, password from OBS_WEBSOCKET_PASSWORD.
   as_user env OBS_WEBSOCKET_PASSWORD="${OBS_WEBSOCKET_PASSWORD:-2ne2-14}" python3 -I "$SCRIPT_DIR/tools/set-obs-websocket.py" "$TARGET_HOME/.var/app/$OBS_ID/config/obs-studio"
-  # PipeWire reads its drop-ins at start. If the user is logged in and Zoom cannot see the microphone yet
-  # (source obs_mic), restart PipeWire so it appears now instead of after the next login (audio drops briefly).
+  # PipeWire reads its drop-ins at start. If the user is logged in and the files changed or Zoom cannot see
+  # the microphone yet (source obs_mic), restart PipeWire so it takes effect now instead of after the next
+  # login (audio drops briefly; close Zoom calls first).
   USER_RT="/run/user/$(id -u "$TARGET_USER")"
-  if [ -S "$USER_RT/bus" ] && ! as_user env XDG_RUNTIME_DIR="$USER_RT" pactl list short sources 2>/dev/null | cut -f2 | grep -qx obs_mic; then
-    echo "Restarting PipeWire so the 'OBS Mic (for Zoom)' microphone appears (audio drops for a moment)"
-    as_user env XDG_RUNTIME_DIR="$USER_RT" DBUS_SESSION_BUS_ADDRESS="unix:path=$USER_RT/bus" \
-      systemctl --user restart pipewire pipewire-pulse wireplumber \
-      || echo "NOTE: could not restart PipeWire; the microphone will appear after the next login or reboot." >&2
+  user_pactl() { as_user env XDG_RUNTIME_DIR="$USER_RT" pactl "$@"; }
+  if [ -S "$USER_RT/bus" ]; then
+    if [ "$PW_BEFORE" != "$PW_AFTER" ] || ! user_pactl list short sources 2>/dev/null | cut -f2 | grep -qx obs_mic; then
+      echo "Restarting PipeWire so the 'OBS Mic (for Zoom)' microphone is up to date (audio drops for a moment)"
+      as_user env XDG_RUNTIME_DIR="$USER_RT" DBUS_SESSION_BUS_ADDRESS="unix:path=$USER_RT/bus" \
+        systemctl --user restart pipewire pipewire-pulse wireplumber \
+        || echo "NOTE: could not restart PipeWire; the microphone will appear after the next login or reboot." >&2
+      for _ in 1 2 3 4 5 6 7 8 9 10; do user_pactl list short sources 2>/dev/null | cut -f2 | grep -qx obs_mic && break; sleep 1; done
+    fi
+    # The default microphone, so Zoom's "Same as System" picks it (WirePlumber remembers this). Its high
+    # priority does the same on a machine where nobody has chosen a default yet.
+    user_pactl set-default-source obs_mic 2>/dev/null \
+      && echo "Default microphone: OBS Mic (for Zoom)" \
+      || echo "NOTE: could not set the default microphone now; it becomes the default after the next login." >&2
   fi
-  echo "In Zoom choose the microphone 'OBS Mic (for Zoom)'."
+  echo "In Zoom: Microphone 'OBS Mic (for Zoom)' (or Same as System), Speaker the computer's speakers"
+  echo "(never 'OBS Monitoring (not for Zoom)'), and Original sound for musicians on; see the README."
 fi
 
 # Sacrament scene music: piano accompaniments of church hymns (free for home and church use),
