@@ -1,5 +1,5 @@
 {
-    "name": "Quail Building",
+    "name": "Single Camera",
     "sources": [
         {
             "prev_ver": 553648128,
@@ -212,7 +212,7 @@
         },
         {
             "prev_ver": 553648128,
-            "name": "Quail - Camera",
+            "name": "Camera",
             "uuid": "8d29ab20-b88f-4336-8b5d-6918b9cc64e4",
             "id": "ndi_source",
             "versioned_id": "ndi_source",
@@ -249,7 +249,7 @@
         },
         {
             "prev_ver": 553648128,
-            "name": "House Right Camera",
+            "name": "PTZ Device",
             "uuid": "98d297e9-75b1-423d-89ee-f784394b5090",
             "id": "color_source",
             "versioned_id": "color_source_v3",
@@ -427,7 +427,7 @@
                         "private_settings": {}
                     },
                     {
-                        "name": "Quail - Camera",
+                        "name": "Camera",
                         "source_uuid": "8d29ab20-b88f-4336-8b5d-6918b9cc64e4",
                         "visible": true,
                         "locked": false,
@@ -576,7 +576,7 @@
                 "id_counter": 4,
                 "items": [
                     {
-                        "name": "Quail - Camera",
+                        "name": "Camera",
                         "source_uuid": "8d29ab20-b88f-4336-8b5d-6918b9cc64e4",
                         "visible": true,
                         "locked": false,
@@ -686,7 +686,7 @@
                         "private_settings": {}
                     },
                     {
-                        "name": "House Right Camera",
+                        "name": "PTZ Device",
                         "source_uuid": "98d297e9-75b1-423d-89ee-f784394b5090",
                         "visible": false,
                         "locked": false,
@@ -780,7 +780,7 @@
                 "id_counter": 2,
                 "items": [
                     {
-                        "name": "Quail - Camera",
+                        "name": "Camera",
                         "source_uuid": "8d29ab20-b88f-4336-8b5d-6918b9cc64e4",
                         "visible": true,
                         "locked": false,
@@ -927,7 +927,7 @@
                 "id_counter": 2,
                 "items": [
                     {
-                        "name": "Quail - Camera",
+                        "name": "Camera",
                         "source_uuid": "8d29ab20-b88f-4336-8b5d-6918b9cc64e4",
                         "visible": true,
                         "locked": false,

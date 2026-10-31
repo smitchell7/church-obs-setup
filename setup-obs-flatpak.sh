@@ -103,14 +103,14 @@ if [ -n "$MISSING" ]; then
   echo "$MISSING" >&2
 fi
 
-# OBS scene collection and camera setup for a specific building (configs/<name>/).
+# OBS scene collection and camera setup (configs/<name>/: single-camera or dual-camera).
 echo "==> Choosing the OBS configuration"
 mapfile -t CONFIGS < <(cd "$SCRIPT_DIR/configs" 2>/dev/null && ls -d */ 2>/dev/null | tr -d / || true)
 if [ "$CONFIG_CHOICE" = ask ]; then
   if [ "${#CONFIGS[@]}" -eq 0 ]; then
     CONFIG_CHOICE=none
   elif [ -t 0 ]; then
-    echo "Which building's OBS configuration should be installed?"
+    echo "Which camera setup should be installed?"
     select choice in "${CONFIGS[@]}" "none (set OBS up by hand)"; do
       case "$choice" in
         "") echo "Pick a number from the list." ;;
