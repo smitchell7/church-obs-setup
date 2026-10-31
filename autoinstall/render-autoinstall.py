@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Fill user-data.template.yaml from secrets.env and write user-data (git-ignored)."""
 import pathlib
+import subprocess
 import sys
 
 here = pathlib.Path(__file__).resolve().parent
@@ -10,6 +11,14 @@ for line in (here / "secrets.env").read_text().splitlines():
     if line and not line.startswith("#") and "=" in line:
         key, _, val = line.partition("=")
         values[key.strip()] = val.strip()
+
+for user in ("BROADCAST", "LIAHONA", "LEHI"):
+    password = values.get(f"PASSWORD_{user}", "")
+    if not password:
+        sys.exit(f"Set PASSWORD_{user} in secrets.env")
+    values[f"HASH_{user}"] = subprocess.run(
+        ["openssl", "passwd", "-6", "-stdin"], input=password, capture_output=True, text=True, check=True
+    ).stdout.strip()
 
 text = (here / "user-data.template.yaml").read_text()
 missing = []

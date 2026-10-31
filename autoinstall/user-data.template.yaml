@@ -6,7 +6,7 @@ autoinstall:
   identity:
     hostname: @HOSTNAME_PREFIX@-base
     username: broadcast
-    password: "@PASSWORD_HASH@"
+    password: "@HASH_BROADCAST@"
   locale: en_US.UTF-8
   timezone: America/Denver
   keyboard:
@@ -41,6 +41,13 @@ autoinstall:
     - curtin in-target -- ubuntu-drivers install || true
 
     - curtin in-target -- systemctl enable avahi-daemon
+
+    # User accounts. 'broadcast' (created above, auto-login) is the only one with sudo.
+    - curtin in-target -- usermod -aG sudo broadcast
+    - curtin in-target -- useradd -m -s /bin/bash -c Liahona liahona
+    - echo 'liahona:@HASH_LIAHONA@' | chroot /target chpasswd -e
+    - curtin in-target -- useradd -m -s /bin/bash -c Lehi lehi
+    - echo 'lehi:@HASH_LEHI@' | chroot /target chpasswd -e
 
     # Wi-Fi networks
     - |

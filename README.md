@@ -61,8 +61,11 @@ first-boot service that runs `setup-obs-flatpak.sh`.
 
 ```bash
 cd autoinstall
-cp secrets.env.example secrets.env   # fill in the hostname prefix, password hash, Wi-Fi, wallpaper
+cp secrets.env.example secrets.env   # fill in the hostname prefix, the three passwords, Wi-Fi, wallpaper
 ./render-autoinstall.py              # writes user-data (git-ignored; it contains the secrets)
 ```
+
+The installer creates three accounts: `broadcast` (auto-login, the only one with sudo), `liahona` and `lehi`.
+The passwords are plain text in `secrets.env` and are hashed (SHA-512) when `user-data` is rendered.
 
 Never commit `secrets.env` or `user-data`.
