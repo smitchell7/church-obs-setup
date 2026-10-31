@@ -53,6 +53,26 @@ HX2/HX3 cameras.
   churchofjesuschrist.org) to `~/Documents/sacrament/`. The music is not stored in this repo.
 - Without the HX libraries, HX cameras show black video with "NDI video decoder not found".
 
+## Install OBS on a new Windows computer
+
+From an elevated PowerShell (right-click, Run as administrator):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1 [-Config quail-config | -NoConfig]
+```
+
+This does the same job as the Flatpak script, using the normal Windows installers:
+
+- OBS Studio through `winget`. If OBS is already installed it must be **33.0 or newer** (DistroAV 6.2.2 uses
+  the OBS 33 plugin folder); an older one is upgraded, and the script stops if it cannot get there.
+- NDI Runtime (`NDI.NDIRuntime`, needs 6.3+). Windows already decodes HX2/HX3 cameras, so no extra libraries.
+- DistroAV and obs-ptz, the latest releases from GitHub (obs-ptz is `glikely/obs-ptz`, currently 1.0 betas;
+  pass `-PtzInstaller C:\path\obs-ptz-...-Installer.exe` to use another build, such as the fork's).
+- A Windows firewall rule for OBS, the scene collection (`-Config` / `-NoConfig`, otherwise it asks; an
+  existing file is saved as `*.bak`), and the sacrament graphic and music in `Documents\sacrament`
+  (`tools\make-sacrament-graphic.ps1`).
+- Close OBS first. Not covered on Windows: the GNOME dock and the Ubuntu autoinstall.
+
 ## Automated Ubuntu install (autoinstall)
 
 `autoinstall/` holds a template for installing Ubuntu on a new computer: Mountain time
