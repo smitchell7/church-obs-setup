@@ -21,7 +21,8 @@
 .PARAMETER Config       Install the OBS scenes and camera setup in configs\<name> (asks if omitted).
 .PARAMETER NoConfig     Skip the OBS scene collection.
 .PARAMETER AudioDevice  The microphone input for OBS: part of its name as Windows shows it, or its endpoint id.
-                        Default: the Sound Blaster, else any USB input, else the Windows default input.
+                        Default: the Sound Blaster, else any USB input, else the first other input that is
+                        not NDI Webcam Audio or the virtual cable.
 .PARAMETER PtzInstaller Use this obs-ptz installer .exe instead of the latest glikely/obs-ptz release.
 .PARAMETER RepoUrl      Where to clone this repo from.
 .PARAMETER Branch       Which branch of the repo to use.
@@ -322,10 +323,15 @@ if ($Config) {
         $pick = $inputs | Where-Object { $_.Id -eq $AudioDevice -or $_.Name -like "*$AudioDevice*" } | Select-Object -First 1
         if (-not $pick) { Write-Warning "No input matches '$AudioDevice'; using the Windows default input." }
     } else {
-        $pick = $inputs | Where-Object Name -match 'Sound Blaster' | Select-Object -First 1
-        if (-not $pick) { $pick = $inputs | Where-Object Name -match 'USB' | Select-Object -First 1 }
-        # Else any real input, by id: "default" could one day be CABLE Output, which would feed OBS back into itself.
-        if (-not $pick) { $pick = $inputs | Select-Object -First 1 }
+        # NDI Tools adds virtual "NDI Webcam Audio" inputs; their sound is poor, so never pick one by default.
+        $real = @($inputs | Where-Object { $_.Name -notmatch 'NDI' })
+        $pick = $real | Where-Object Name -match 'Sound Blaster' | Select-Object -First 1
+        if (-not $pick) { $pick = $real | Where-Object Name -match 'USB' | Select-Object -First 1 }
+        if (-not $pick) {
+            Write-Warning 'No Sound Blaster or USB audio input is plugged in. Plug it in and run this again, or pass -AudioDevice.'
+            # Else any real input, by id: "default" could be CABLE Output or NDI audio.
+            $pick = $real | Select-Object -First 1
+        }
     }
     $deviceId = if ($pick) { $pick.Id } else { 'default' }
     $deviceName = if ($pick) { $pick.Name } else { 'the Windows default input' }
