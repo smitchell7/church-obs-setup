@@ -213,6 +213,8 @@ if [ "$CONFIG_CHOICE" != none ]; then
     SOURCES=$(as_user env XDG_RUNTIME_DIR="/run/user/$TARGET_UID" pactl list short sources 2>/dev/null | cut -f2 | grep -v '\.monitor$' || true)
     AUDIO_DEVICE=$(grep -i 'sound_blaster' <<<"$SOURCES" | head -1 || true)
     [ -n "$AUDIO_DEVICE" ] || AUDIO_DEVICE=$(grep -i '^alsa_input\.usb' <<<"$SOURCES" | head -1 || true)
+    # Else any real input, by name: "default" could one day be OBS Mic, which would feed OBS back into itself.
+    [ -n "$AUDIO_DEVICE" ] || AUDIO_DEVICE=$(grep '^alsa_input\.' <<<"$SOURCES" | head -1 || true)
     [ -n "$AUDIO_DEVICE" ] || AUDIO_DEVICE=default
   fi
   echo "Audio input for OBS: $AUDIO_DEVICE (change it on the 'USB Audio' source in OBS if this is wrong)"
@@ -258,14 +260,15 @@ if [ "$CONFIG_CHOICE" != none ]; then
         || echo "NOTE: could not restart PipeWire; the microphone will appear after the next login or reboot." >&2
       for _ in 1 2 3 4 5 6 7 8 9 10; do user_pactl list short sources 2>/dev/null | cut -f2 | grep -qx obs_mic && break; sleep 1; done
     fi
-    # The default microphone, so Zoom's "Same as System" picks it (WirePlumber remembers this). Its high
-    # priority does the same on a machine where nobody has chosen a default yet.
-    user_pactl set-default-source obs_mic 2>/dev/null \
-      && echo "Default microphone: OBS Mic (for Zoom)" \
-      || echo "NOTE: could not set the default microphone now; it becomes the default after the next login." >&2
+    # OBS Mic must never be the system default microphone: OBS's USB Audio source (and anything else on
+    # "default") would record OBS's own output and feed it back. Undo that if it was set.
+    if [ "$(user_pactl get-default-source 2>/dev/null)" = obs_mic ]; then
+      HW_MIC=$(user_pactl list short sources 2>/dev/null | cut -f2 | grep '^alsa_input\.' | head -1 || true)
+      [ -n "$HW_MIC" ] && user_pactl set-default-source "$HW_MIC" && echo "Default microphone set back to $HW_MIC (OBS Mic must not be the default)"
+    fi
   fi
-  echo "In Zoom: Microphone 'OBS Mic (for Zoom)' (or Same as System), Speaker the computer's speakers"
-  echo "(never 'OBS Monitoring (not for Zoom)'), and Original sound for musicians on; see the README."
+  echo "In Zoom pick, by name: Microphone 'OBS Mic (for Zoom)' (not 'Same as System'), Speaker the computer's"
+  echo "speakers (never 'OBS Monitoring (not for Zoom)'), and Original sound for musicians on; see the README."
 fi
 
 # Sacrament scene music: piano accompaniments of church hymns (free for home and church use),

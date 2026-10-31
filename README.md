@@ -73,14 +73,15 @@ HX2/HX3 cameras.
     the Zoom audio from the USB input to the music, and changing back switches it again.
   - Zoom: OBS monitors its audio (the USB input and the sacrament music) into a virtual speaker that only OBS
     uses, "OBS Monitoring (not for Zoom)" (`audio/obs-to-zoom.conf`), and a virtual microphone, "OBS Mic (for
-    Zoom)", carries it (`audio/obs-mic.conf`, a remap of the speaker's monitor). The installer makes that
-    microphone the system default. Ubuntu already uses PipeWire, which speaks the PulseAudio protocol, so
+    Zoom)", carries it (`audio/obs-mic.conf`, a remap of the speaker's monitor). Never make that
+    microphone the system default: OBS's "USB Audio" source (and anything else on "default") would then
+    record OBS's own output and feed it back, which sounds like a tone or howl. Ubuntu already uses PipeWire, which speaks the PulseAudio protocol, so
     PulseAudio itself is not needed (the installer adds `pulseaudio-utils` for `pactl`). PipeWire only reads
     these files when it starts, so if the user is logged in the installer restarts PipeWire when they change
     (audio drops for a moment; not during a Zoom call); otherwise they apply after the next login.
     `tools/set-obs-monitor.py` points OBS's monitoring device at the speaker.
   - **Zoom settings, once per computer** (Zoom keeps these itself, so the installer cannot set them):
-    Settings > Audio: **Microphone** "OBS Mic (for Zoom)" (or "Same as System"); **Speaker** the computer's
+    Settings > Audio: **Microphone** "OBS Mic (for Zoom)", picked by name (not "Same as System"); **Speaker** the computer's
     speakers or headphones, never "OBS Monitoring (not for Zoom)", which would send the meeting back into the
     microphone; under Music and Professional Audio, tick **Show in-meeting option to enable "Original sound
     for musicians"**, then in a meeting click **Original sound for musicians: Off** at the top left to turn it
