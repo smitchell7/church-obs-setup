@@ -141,7 +141,8 @@ computer always runs the current version. Run it again at any time to update; cl
   `audio\sacrament-playlist.txt` (`tools\make-sacrament-playlist.ps1`) in `Documents\sacrament`.
 
 Options: `-Branch` (default `windows`), `-RepoUrl`, `-RepoDir`. Not covered on Windows: the GNOME dock, the
-OBS WebSocket password, and the Ubuntu autoinstall.
+OBS WebSocket password, and the Ubuntu autoinstall. Testing it, and preparing a laptop to test on:
+[docs/windows-testing.md](docs/windows-testing.md).
 
 ## Automated Ubuntu install (autoinstall)
 
