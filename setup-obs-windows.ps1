@@ -121,6 +121,28 @@ function Get-ObsVersion {
     return [version]('{0}.{1}.{2}' -f $v.FileMajorPart, $v.FileMinorPart, $v.FileBuildPart)
 }
 
+# Apps that list webcams (browsers, Teams, Zoom, Claude...) load OBS's virtual-camera
+# DLL, which locks files the OBS installer must replace (it fails with exit code 6).
+function Get-ObsFileHolders {
+    $obsDir = Join-Path $env:ProgramFiles 'obs-studio'
+    Get-Process | Where-Object {
+        $_.Id -ne $PID -and $(try { $_.Modules | Where-Object { $_.FileName -like "$obsDir\*" } } catch { $null })
+    }
+}
+
+function Clear-ObsFileHolders {
+    $holders = @(Get-ObsFileHolders)
+    if (-not $holders) { return }
+    Write-Host '    These apps have OBS files open (usually the OBS virtual camera) and block the upgrade:' -ForegroundColor Yellow
+    $holders | ForEach-Object { Write-Host "      - $($_.Name) (pid $($_.Id))" }
+    $answer = Read-Host '    Close them now? Unsaved work in them will be lost. [y/N]'
+    if ($answer -notmatch '^(y|yes)$') { Fail 'Close the apps listed above and run this again.' }
+    $holders | Stop-Process -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 2
+    $left = @(Get-ObsFileHolders)
+    if ($left) { Fail "Still open: $(($left | ForEach-Object Name) -join ', '). Close them (or reboot) and run this again." }
+}
+
 Step '[2/7] OBS Studio'
 $have = Get-ObsVersion
 if ($have -and $have -ge $MinObs) {
@@ -128,6 +150,7 @@ if ($have -and $have -ge $MinObs) {
 } else {
     if ($have) {
         Write-Host "    OBS $have is older than $MinObs; upgrading."
+        Clear-ObsFileHolders
         Winget-Run @('upgrade', '--id', 'OBSProject.OBSStudio', '--exact')
     } else {
         Write-Host '    OBS is not installed; installing.'
