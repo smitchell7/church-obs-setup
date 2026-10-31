@@ -182,7 +182,7 @@ autoinstall:
       [Service]
       Type=oneshot
       Environment=TARGET_USER=broadcast
-      ExecStart=/bin/bash -c 'test -d /opt/church-obs-setup || git clone https://github.com/smitchell7/church-obs-setup /opt/church-obs-setup'
+      ExecStart=/bin/bash -c 'test -d /opt/church-obs-setup || git clone @REPO_URL@ /opt/church-obs-setup'
       ExecStart=/opt/church-obs-setup/setup-obs-flatpak.sh --install --no-pin-dock --config=@OBS_CONFIG@
       ExecStartPost=/usr/bin/touch /var/lib/church-obs-firstboot.done
       Restart=on-failure
