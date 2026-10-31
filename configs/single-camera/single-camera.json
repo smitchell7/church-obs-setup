@@ -298,39 +298,39 @@
                         "presets": [
                             {
                                 "id": "camera:0",
-                                "name": "Pulpit"
+                                "name": "Pulpit - p0"
                             },
                             {
                                 "id": "camera:1",
-                                "name": "Chorister"
+                                "name": "Chorister - p1"
                             },
                             {
                                 "id": "camera:2",
-                                "name": "Rostrum"
+                                "name": "Rostrum - p2"
                             },
                             {
                                 "id": "camera:3",
-                                "name": "Full Room"
+                                "name": "Full Room - p3"
                             },
                             {
                                 "id": "camera:4",
-                                "name": "Piano"
+                                "name": "Piano - p4"
                             },
                             {
                                 "id": "camera:5",
-                                "name": "Speaker Close-up"
+                                "name": "Speaker Close-up - p5"
                             },
                             {
                                 "id": "camera:6",
-                                "name": "Piano and Pulpit"
+                                "name": "Piano and Pulpit - p6"
                             },
                             {
                                 "id": "camera:7",
-                                "name": "Organ"
+                                "name": "Organ - p7"
                             },
                             {
                                 "id": "camera:8",
-                                "name": "Choir"
+                                "name": "Choir - p8"
                             }
                         ],
                         "host": "192.168.111.245",
