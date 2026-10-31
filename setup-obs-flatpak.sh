@@ -128,10 +128,20 @@ if [ "$CONFIG_CHOICE" != none ]; then
   [ -d "$CONFIG_SRC" ] || { echo "No such configuration: $CONFIG_CHOICE (have: ${CONFIGS[*]:-none})" >&2; exit 1; }
   SCENES_DIR="$TARGET_HOME/.var/app/$OBS_ID/config/obs-studio/basic/scenes"
   as_user mkdir -p "$SCENES_DIR"
+  # Audio comes from a USB input (the Sound Blaster where there is one). Use AUDIO_DEVICE=name to force a
+  # PulseAudio source, else pick the Sound Blaster, else any USB input, else the system default.
+  if [ -z "${AUDIO_DEVICE:-}" ]; then
+    TARGET_UID=$(id -u "$TARGET_USER")
+    SOURCES=$(as_user env XDG_RUNTIME_DIR="/run/user/$TARGET_UID" pactl list short sources 2>/dev/null | cut -f2 | grep -v '\.monitor$' || true)
+    AUDIO_DEVICE=$(grep -i 'sound_blaster' <<<"$SOURCES" | head -1 || true)
+    [ -n "$AUDIO_DEVICE" ] || AUDIO_DEVICE=$(grep -i '^alsa_input\.usb' <<<"$SOURCES" | head -1 || true)
+    [ -n "$AUDIO_DEVICE" ] || AUDIO_DEVICE=default
+  fi
+  echo "Audio input for OBS: $AUDIO_DEVICE (change it on the 'USB Audio' source in OBS if this is wrong)"
   for f in "$CONFIG_SRC"/*.json; do
     dest="$SCENES_DIR/$(basename "$f")"
     [ -e "$dest" ] && as_user cp "$dest" "$dest.$(date +%Y%m%d-%H%M%S).bak"
-    sed "s|@HOME@|$TARGET_HOME|g" "$f" | as_user tee "$dest" >/dev/null
+    sed -e "s|@HOME@|$TARGET_HOME|g" -e "s|@AUDIO_DEVICE@|$AUDIO_DEVICE|g" "$f" | as_user tee "$dest" >/dev/null
   done
   echo "Installed the '$CONFIG_CHOICE' scene collection. In OBS choose it from the Scene Collection menu."
 fi

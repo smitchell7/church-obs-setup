@@ -51,6 +51,11 @@ HX2/HX3 cameras.
     Speaker Close-up, Organ, Choir, Sacrament.
   - `dual-camera`: adds a second camera at 192.168.111.246 (245 is "Left", 246 is "Right"), each with its own
     PTZ device. Every scene above except Sacrament comes as a Left and a Right version ("Left Pulpit", ...).
+  - Video comes from the cameras (their own NDI audio is not used). Audio comes from the "USB Audio" source, a
+    USB input (the Sound Blaster where there is one), in every scene except Sacrament. The installer picks the
+    Sound Blaster, else any USB input, else the system default (`AUDIO_DEVICE=name` forces one; at first boot
+    there is no desktop session, so it usually falls back to default: set the device on the source in OBS).
+    The Sacrament scene plays the music track and has no microphone.
   - Presets are stored in the cameras: save positions in these slots on each camera so the scenes can recall
     them: 0 Pulpit, 1 Chorister, 2 Rostrum, 3 Full Room, 4 Piano, 5 Speaker Close-up, 6 Organ, 7 Choir.
 - It makes the sacrament background picture (`tools/make-sacrament-graphic.py` downloads *The Good Shepherd*
