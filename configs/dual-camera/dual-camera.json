@@ -62,7 +62,7 @@
             "id": "ffmpeg_source",
             "versioned_id": "ffmpeg_source",
             "settings": {
-                "local_file": "@HOME@/Documents/sacrament/bread-of-life-living-water-piano.mp3",
+                "local_file": "@HOME@/Documents/sacrament/sacrament-playlist.mp3",
                 "is_local_file": true,
                 "looping": true,
                 "restart_on_activate": true,

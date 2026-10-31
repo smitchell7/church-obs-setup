@@ -61,7 +61,7 @@ PTZ_STAMP=/var/lib/church-obs-ptz-bundle.sha256
 
 # What is missing? Each piece is installed when it is missing; --install also updates what is there.
 NEED_APT=0 NEED_OBS=0 NEED_DISTROAV=0 NEED_PTZ=0 NEED_NDI=0
-for cmd in flatpak curl pactl; do command -v "$cmd" >/dev/null || NEED_APT=1; done
+for cmd in flatpak curl pactl ffmpeg; do command -v "$cmd" >/dev/null || NEED_APT=1; done
 python3 -c 'import PIL' 2>/dev/null || NEED_APT=1
 if command -v flatpak >/dev/null; then
   flatpak info --system "$OBS_ID" >/dev/null 2>&1 || NEED_OBS=1
@@ -79,7 +79,7 @@ want() { [ "$INSTALL" = yes ] || [ "$1" = 1 ]; }
 
 echo "==> Checking the installed software"
 status() { if [ "$2" = 1 ]; then echo "  $1: MISSING"; else echo "  $1: installed"; fi; }
-status "system tools (flatpak, curl, pactl, python3-pil)" "$NEED_APT"
+status "system tools (flatpak, curl, pactl, ffmpeg, python3-pil)" "$NEED_APT"
 status "OBS Studio" "$NEED_OBS"
 status "DistroAV (NDI)" "$NEED_DISTROAV"
 status "obs-ptz (PTZ Controls)" "$NEED_PTZ"
@@ -89,7 +89,7 @@ if [ "$INSTALL" = yes ]; then echo "  --install given: installing and updating e
 if want "$NEED_APT"; then
   echo "==> [1/6] Installing system tools"
   apt-get update -y
-  apt-get install -y flatpak python3-pil curl pulseaudio-utils
+  apt-get install -y flatpak python3-pil curl pulseaudio-utils ffmpeg
 fi
 if [ "$INSTALL" = yes ] || [ "$NEED_OBS$NEED_DISTROAV$NEED_PTZ$NEED_NDI" != 0000 ]; then
   flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
@@ -222,16 +222,22 @@ if [ "$CONFIG_CHOICE" != none ]; then
   as_user python3 -I "$SCRIPT_DIR/tools/set-obs-monitor.py" "$TARGET_HOME/.var/app/$OBS_ID/config/obs-studio"
   # Remote control: OBS's WebSocket server on port 4455, on by default, password from OBS_WEBSOCKET_PASSWORD.
   as_user env OBS_WEBSOCKET_PASSWORD="${OBS_WEBSOCKET_PASSWORD:-2ne2-14}" python3 -I "$SCRIPT_DIR/tools/set-obs-websocket.py" "$TARGET_HOME/.var/app/$OBS_ID/config/obs-studio"
-  echo "In Zoom choose the microphone 'OBS Mic (for Zoom)' (available after the next login or reboot)."
+  # PipeWire reads its drop-ins at start. If the user is logged in and the virtual sink is not there yet,
+  # restart PipeWire so the microphone appears now instead of after the next login (audio drops briefly).
+  USER_RT="/run/user/$TARGET_UID"
+  if [ -S "$USER_RT/bus" ] && ! as_user env XDG_RUNTIME_DIR="$USER_RT" pactl list short sinks 2>/dev/null | grep -q obs_zoom; then
+    echo "Restarting PipeWire so the 'OBS Mic (for Zoom)' microphone appears (audio drops for a moment)"
+    as_user env XDG_RUNTIME_DIR="$USER_RT" DBUS_SESSION_BUS_ADDRESS="unix:path=$USER_RT/bus" \
+      systemctl --user restart pipewire pipewire-pulse wireplumber \
+      || echo "NOTE: could not restart PipeWire; the microphone will appear after the next login or reboot." >&2
+  fi
+  echo "In Zoom choose the microphone 'OBS Mic (for Zoom)'."
 fi
 
-# Sacrament scene music: piano accompaniment of "Bread of Life, Living Water" (church hymn
-# recordings are free for home and church use). Not stored in the repo. Failure here is not fatal.
-echo "==> [6/6] Installing the sacrament graphic and downloading the sacrament music"
-MUSIC_PAGE='https://www.churchofjesuschrist.org/media/music/songs/bread-of-life-living-water?lang=eng'
-MUSIC_FALLBACK='https://assets.churchofjesuschrist.org/a6/fa/a6fa4142ee3511eeab89eeeeac1ef623ccb828a4/bread_of_life_living_water.mp3'
+# Sacrament scene music: piano accompaniments of church hymns (free for home and church use),
+# played as a looping playlist. Not stored in the repo. Failure here is not fatal.
+echo "==> [6/6] Installing the sacrament graphic and building the sacrament music playlist"
 MUSIC_DIR="$TARGET_HOME/Documents/sacrament"
-MUSIC_FILE="$MUSIC_DIR/bread-of-life-living-water-piano.mp3"
 as_user mkdir -p "$MUSIC_DIR"
 # The painting (The Good Shepherd) is downloaded and the message is drawn on it; neither is kept in the repo.
 if [ "$INSTALL" != yes ] && [ -s "$MUSIC_DIR/sacrament-graphic.png" ]; then
@@ -240,15 +246,10 @@ else
   as_user python3 -I "$SCRIPT_DIR/tools/make-sacrament-graphic.py" --out "$MUSIC_DIR/sacrament-graphic.png" \
     || echo "WARNING: could not make the sacrament graphic; see tools/make-sacrament-graphic.py" >&2
 fi
-if [ ! -s "$MUSIC_FILE" ]; then
-  # The page lists each recording's URL; pick the piano accompaniment (not guitar/vocal).
-  MUSIC_URL=$(curl -fsSL -A 'Mozilla/5.0' "$MUSIC_PAGE" 2>/dev/null |
-    python3 -c 'import re,sys; m=re.search(r"\"assetType\":\"AUDIO_ACCOMPANIMENT\",\"distributionUrl\":\"([^\"]+\.mp3)\"", sys.stdin.read()); print(m.group(1) if m else "")' || true)
-  as_user mkdir -p "$MUSIC_DIR"
-  as_user curl -fsSL -o "$MUSIC_FILE.part" "${MUSIC_URL:-$MUSIC_FALLBACK}" \
-    && as_user mv "$MUSIC_FILE.part" "$MUSIC_FILE" \
-    || { rm -f "$MUSIC_FILE.part"; echo "WARNING: could not download the sacrament music; fetch it by hand from $MUSIC_PAGE" >&2; }
-fi
+# The hymns listed in audio/sacrament-playlist.txt are downloaded and joined into one file that OBS loops.
+as_user python3 -I "$SCRIPT_DIR/tools/make-sacrament-playlist.py" \
+  --list "$SCRIPT_DIR/audio/sacrament-playlist.txt" --dir "$MUSIC_DIR" \
+  || echo "WARNING: could not build the sacrament playlist; see tools/make-sacrament-playlist.py" >&2
 
 # Optional: pin OBS to the GNOME dock. Only possible where a schema override already
 # sets favorite-apps (the church autoinstall creates one).

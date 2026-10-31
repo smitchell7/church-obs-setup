@@ -58,30 +58,38 @@ HX2/HX3 cameras.
   `--config=dual-camera` or `--no-config` up front. Each is an OBS scene collection with the cameras, PTZ
   presets and the sacrament scene. Choose it afterwards from OBS's Scene Collection menu. An existing file is
   saved as `*.bak` first.
-  - `single-camera`: one NDI camera at 192.168.111.245. Scenes: Pulpit, Rostrum, Full Room, Chorister, Piano,
-    Speaker Close-up, Organ, Choir, Sacrament.
+  - `single-camera`: one NDI camera at 192.168.111.245. Scenes, in preset order, are named with their slot:
+    Joystick, Pulpit - p0, Chorister - p1, Rostrum - p2, Full Room - p3, Piano - p4, Speaker Close-up - p5,
+    Piano and Pulpit - p6, Organ - p7, Choir - p8, Sacrament. **Joystick** shows the camera without recalling a
+    preset, so it stays where it is and you can steer it with the PTZ Controls dock.
   - `dual-camera`: adds a second camera at 192.168.111.246 (245 is "Left", 246 is "Right"), each with its own
-    PTZ device. Every scene above except Sacrament comes as a Left and a Right version ("Left Pulpit", ...).
+    PTZ device. Every scene above except Sacrament comes as a Left and a Right version ("Left Pulpit - p0", ...),
+    with **Joystick Left** and **Joystick Right** in place of Joystick.
   - Video comes from the cameras (their own NDI audio is not used). Audio comes from the "USB Audio" source, a
     USB input (the Sound Blaster where there is one), in every scene except Sacrament. The installer picks the
     Sound Blaster, else any USB input, else the system default (`AUDIO_DEVICE=name` forces one; at first boot
     there is no desktop session, so it usually falls back to default: set the device on the source in OBS).
-    The Sacrament scene plays the music track and has no microphone.
+    The Sacrament scene plays the sacrament music instead and has no microphone, so changing to it switches
+    the Zoom audio from the USB input to the music, and changing back switches it again.
   - Zoom: OBS monitors its audio (the USB input and the sacrament music) into a virtual device, "OBS to Zoom",
     and a virtual microphone "OBS Mic (for Zoom)" carries it. In Zoom pick that microphone. Ubuntu already
     uses PipeWire, which speaks the PulseAudio protocol, so PulseAudio itself is not needed (the installer
-    adds `pulseaudio-utils` for `pactl`). The virtual devices appear after the next login or reboot
-    (`audio/obs-to-zoom.conf`); `tools/set-obs-monitor.py` points OBS's monitoring device at them.
+    adds `pulseaudio-utils` for `pactl`). PipeWire only reads `audio/obs-to-zoom.conf` when it starts, so if
+    the user is logged in the installer restarts PipeWire to bring the devices up (audio drops for a moment);
+    otherwise they appear after the next login. `tools/set-obs-monitor.py` points OBS's monitoring device at them.
   - Remote control: OBS's WebSocket server is switched on by default (port 4455, password required). The
     password is `OBS_WEBSOCKET_PASSWORD` in `secrets.env` for the autoinstall, or the same variable when
     running the script by hand; if neither is set, the script uses its built-in default. That default is
     in this public repo, so set your own for anything that matters. `tools/set-obs-websocket.py` does this.
   - Presets are stored in the cameras: save positions in these slots on each camera so the scenes can recall
-    them: 0 Pulpit, 1 Chorister, 2 Rostrum, 3 Full Room, 4 Piano, 5 Speaker Close-up, 6 Organ, 7 Choir.
+    them: 0 Pulpit, 1 Chorister, 2 Rostrum, 3 Full Room, 4 Piano, 5 Speaker Close-up, 6 Piano and Pulpit, 7 Organ, 8 Choir.
 - It makes the sacrament background picture (`tools/make-sacrament-graphic.py` downloads *The Good Shepherd*
   from churchofjesuschrist.org and crops it; the message is OBS text layers in the scene; use `--image` for a
-  different picture) in `~/Documents/sacrament/` and downloads the sacrament music (piano accompaniment of "Bread of Life, Living Water" from
-  churchofjesuschrist.org) to `~/Documents/sacrament/`. The music is not stored in this repo.
+  different picture) in `~/Documents/sacrament/`.
+- It builds the sacrament music playlist: the hymns listed in `audio/sacrament-playlist.txt` (one page name per
+  line, in play order) are downloaded as piano accompaniments from churchofjesuschrist.org and joined with ffmpeg
+  into `~/Documents/sacrament/sacrament-playlist.mp3`, which the Sacrament scene loops. To change the playlist, edit
+  the list and run the installer again; it downloads only what is new. The music is not stored in this repo.
 - Without the HX libraries, HX cameras show black video with "NDI video decoder not found".
 
 ## Automated Ubuntu install (autoinstall)
