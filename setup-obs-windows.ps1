@@ -301,6 +301,8 @@ if ($Config) {
     } else {
         $pick = $inputs | Where-Object Name -match 'Sound Blaster' | Select-Object -First 1
         if (-not $pick) { $pick = $inputs | Where-Object Name -match 'USB' | Select-Object -First 1 }
+        # Else any real input, by id: "default" could one day be CABLE Output, which would feed OBS back into itself.
+        if (-not $pick) { $pick = $inputs | Select-Object -First 1 }
     }
     $deviceId = if ($pick) { $pick.Id } else { 'default' }
     $deviceName = if ($pick) { $pick.Name } else { 'the Windows default input' }
