@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Point OBS's audio monitoring device at the virtual "OBS to Zoom" sink (see audio/obs-to-zoom.conf).
+"""Point OBS's audio monitoring device at the virtual "OBS Monitoring (not for Zoom)" sink (see audio/obs-to-zoom.conf).
 
 Usage: set-obs-monitor.py OBS_CONFIG_DIR  (e.g. ~/.var/app/com.obsproject.Studio/config/obs-studio)
 Sets it in every existing profile; if OBS has never been run, creates a "Church" profile with it.
@@ -9,7 +9,7 @@ import pathlib
 import sys
 
 DEVICE_ID = "obs_zoom"
-DEVICE_NAME = "OBS to Zoom"
+DEVICE_NAME = "OBS Monitoring (not for Zoom)"
 
 
 def load(path):

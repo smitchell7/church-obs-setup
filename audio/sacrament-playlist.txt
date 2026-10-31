@@ -1,0 +1,13 @@
+# Sacrament music, played in this order and looped while the Sacrament scene is up.
+# One hymn per line: the last part of its page address on churchofjesuschrist.org, e.g.
+#   https://www.churchofjesuschrist.org/media/music/songs/I-stand-all-amazed  ->  i-stand-all-amazed
+# After editing the list, re-run the installer (sudo ./setup-obs-flatpak.sh --config=NAME) to rebuild the playlist.
+# The piano accompaniment of each hymn is used.
+bread-of-life-living-water
+reverently-and-meekly-now
+in-humility-our-savior
+behold-the-great-redeemer-die
+upon-the-cross-of-calvary
+i-stand-all-amazed
+god-loved-us-so-he-sent-his-son
+i-believe-in-christ

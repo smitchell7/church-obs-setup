@@ -61,8 +61,9 @@ PTZ_STAMP=/var/lib/church-obs-ptz-bundle.sha256
 
 # What is missing? Each piece is installed when it is missing; --install also updates what is there.
 NEED_APT=0 NEED_OBS=0 NEED_DISTROAV=0 NEED_PTZ=0 NEED_NDI=0
-for cmd in flatpak curl pactl; do command -v "$cmd" >/dev/null || NEED_APT=1; done
+for cmd in flatpak curl pactl ffmpeg; do command -v "$cmd" >/dev/null || NEED_APT=1; done
 python3 -c 'import PIL' 2>/dev/null || NEED_APT=1
+modinfo v4l2loopback >/dev/null 2>&1 || NEED_APT=1   # OBS Virtual Camera
 if command -v flatpak >/dev/null; then
   flatpak info --system "$OBS_ID" >/dev/null 2>&1 || NEED_OBS=1
   flatpak info --system "$OBS_ID.Plugin.DistroAV" >/dev/null 2>&1 || NEED_DISTROAV=1
@@ -79,7 +80,7 @@ want() { [ "$INSTALL" = yes ] || [ "$1" = 1 ]; }
 
 echo "==> Checking the installed software"
 status() { if [ "$2" = 1 ]; then echo "  $1: MISSING"; else echo "  $1: installed"; fi; }
-status "system tools (flatpak, curl, pactl, python3-pil)" "$NEED_APT"
+status "system tools (flatpak, curl, pactl, ffmpeg, python3-pil, v4l2loopback)" "$NEED_APT"
 status "OBS Studio" "$NEED_OBS"
 status "DistroAV (NDI)" "$NEED_DISTROAV"
 status "obs-ptz (PTZ Controls)" "$NEED_PTZ"
@@ -89,7 +90,7 @@ if [ "$INSTALL" = yes ]; then echo "  --install given: installing and updating e
 if want "$NEED_APT"; then
   echo "==> [1/6] Installing system tools"
   apt-get update -y
-  apt-get install -y flatpak python3-pil curl pulseaudio-utils
+  apt-get install -y flatpak python3-pil curl pulseaudio-utils ffmpeg v4l2loopback-dkms
 fi
 if [ "$INSTALL" = yes ] || [ "$NEED_OBS$NEED_DISTROAV$NEED_PTZ$NEED_NDI" != 0000 ]; then
   flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
@@ -162,6 +163,24 @@ if want "$NEED_NDI"; then
   fi
 fi
 
+# OBS Virtual Camera (the video Zoom picks up). It needs the v4l2loopback kernel module; when the module is
+# not loaded, OBS loads it with pkexec, which asks for an admin password every time. Load it at boot, with the
+# options OBS itself uses, so starting the virtual camera needs no password.
+echo "==> Loading the virtual camera module at boot (no password prompt when starting OBS's Virtual Camera)"
+cat > /etc/modprobe.d/obs-virtualcam.conf <<'EOF'
+# OBS Virtual Camera (setup-obs-flatpak.sh): the options OBS passes when it loads the module itself.
+options v4l2loopback exclusive_caps=1 card_label="OBS Virtual Camera"
+EOF
+echo v4l2loopback > /etc/modules-load.d/obs-virtualcam.conf
+if ! modinfo v4l2loopback >/dev/null 2>&1; then
+  echo "WARNING: the v4l2loopback module is not available for kernel $(uname -r); OBS's Virtual Camera will not work until it is (sudo apt install v4l2loopback-dkms, then reboot)." >&2
+elif ! grep -q '^v4l2loopback ' /proc/modules; then
+  modprobe v4l2loopback || echo "WARNING: could not load v4l2loopback now; it loads at the next boot." >&2
+fi
+if mokutil --sb-state 2>/dev/null | grep -qi 'enabled'; then
+  echo "NOTE: Secure Boot is on. If the virtual camera does not appear, the v4l2loopback module may need its signing key enrolled (see 'mokutil --import')." >&2
+fi
+
 # OBS scene collection and camera setup (configs/<name>/: single-camera or dual-camera).
 echo "==> Choosing the OBS configuration"
 mapfile -t CONFIGS < <(cd "$SCRIPT_DIR/configs" 2>/dev/null && ls -d */ 2>/dev/null | tr -d / || true)
@@ -194,6 +213,8 @@ if [ "$CONFIG_CHOICE" != none ]; then
     SOURCES=$(as_user env XDG_RUNTIME_DIR="/run/user/$TARGET_UID" pactl list short sources 2>/dev/null | cut -f2 | grep -v '\.monitor$' || true)
     AUDIO_DEVICE=$(grep -i 'sound_blaster' <<<"$SOURCES" | head -1 || true)
     [ -n "$AUDIO_DEVICE" ] || AUDIO_DEVICE=$(grep -i '^alsa_input\.usb' <<<"$SOURCES" | head -1 || true)
+    # Else any real input, by name: "default" could one day be OBS Mic, which would feed OBS back into itself.
+    [ -n "$AUDIO_DEVICE" ] || AUDIO_DEVICE=$(grep '^alsa_input\.' <<<"$SOURCES" | head -1 || true)
     [ -n "$AUDIO_DEVICE" ] || AUDIO_DEVICE=default
   fi
   echo "Audio input for OBS: $AUDIO_DEVICE (change it on the 'USB Audio' source in OBS if this is wrong)"
@@ -217,21 +238,43 @@ if [ "$CONFIG_CHOICE" != none ]; then
   # Zoom audio: a virtual "OBS Mic (for Zoom)" microphone fed by OBS's audio monitoring (PipeWire's
   # PulseAudio layer is already on Ubuntu; only the pactl tool is added).
   PW_DIR="$TARGET_HOME/.config/pipewire/pipewire.conf.d"
-  as_user mkdir -p "$PW_DIR"
+  PWP_DIR="$TARGET_HOME/.config/pipewire/pipewire-pulse.conf.d"
+  PW_BEFORE=$(cat "$PW_DIR/obs-to-zoom.conf" "$PWP_DIR/obs-mic.conf" 2>/dev/null | md5sum)
+  as_user mkdir -p "$PW_DIR" "$PWP_DIR"
   as_user cp "$SCRIPT_DIR/audio/obs-to-zoom.conf" "$PW_DIR/obs-to-zoom.conf"
+  as_user cp "$SCRIPT_DIR/audio/obs-mic.conf" "$PWP_DIR/obs-mic.conf"
+  PW_AFTER=$(cat "$PW_DIR/obs-to-zoom.conf" "$PWP_DIR/obs-mic.conf" | md5sum)
   as_user python3 -I "$SCRIPT_DIR/tools/set-obs-monitor.py" "$TARGET_HOME/.var/app/$OBS_ID/config/obs-studio"
   # Remote control: OBS's WebSocket server on port 4455, on by default, password from OBS_WEBSOCKET_PASSWORD.
   as_user env OBS_WEBSOCKET_PASSWORD="${OBS_WEBSOCKET_PASSWORD:-2ne2-14}" python3 -I "$SCRIPT_DIR/tools/set-obs-websocket.py" "$TARGET_HOME/.var/app/$OBS_ID/config/obs-studio"
-  echo "In Zoom choose the microphone 'OBS Mic (for Zoom)' (available after the next login or reboot)."
+  # PipeWire reads its drop-ins at start. If the user is logged in and the files changed or Zoom cannot see
+  # the microphone yet (source obs_mic), restart PipeWire so it takes effect now instead of after the next
+  # login (audio drops briefly; close Zoom calls first).
+  USER_RT="/run/user/$(id -u "$TARGET_USER")"
+  user_pactl() { as_user env XDG_RUNTIME_DIR="$USER_RT" pactl "$@"; }
+  if [ -S "$USER_RT/bus" ]; then
+    if [ "$PW_BEFORE" != "$PW_AFTER" ] || ! user_pactl list short sources 2>/dev/null | cut -f2 | grep -qx obs_mic; then
+      echo "Restarting PipeWire so the 'OBS Mic (for Zoom)' microphone is up to date (audio drops for a moment)"
+      as_user env XDG_RUNTIME_DIR="$USER_RT" DBUS_SESSION_BUS_ADDRESS="unix:path=$USER_RT/bus" \
+        systemctl --user restart pipewire pipewire-pulse wireplumber \
+        || echo "NOTE: could not restart PipeWire; the microphone will appear after the next login or reboot." >&2
+      for _ in 1 2 3 4 5 6 7 8 9 10; do user_pactl list short sources 2>/dev/null | cut -f2 | grep -qx obs_mic && break; sleep 1; done
+    fi
+    # OBS Mic must never be the system default microphone: OBS's USB Audio source (and anything else on
+    # "default") would record OBS's own output and feed it back. Undo that if it was set.
+    if [ "$(user_pactl get-default-source 2>/dev/null)" = obs_mic ]; then
+      HW_MIC=$(user_pactl list short sources 2>/dev/null | cut -f2 | grep '^alsa_input\.' | head -1 || true)
+      [ -n "$HW_MIC" ] && user_pactl set-default-source "$HW_MIC" && echo "Default microphone set back to $HW_MIC (OBS Mic must not be the default)"
+    fi
+  fi
+  echo "In Zoom pick, by name: Microphone 'OBS Mic (for Zoom)' (not 'Same as System'), Speaker the computer's"
+  echo "speakers (never 'OBS Monitoring (not for Zoom)'), and Original sound for musicians on; see the README."
 fi
 
-# Sacrament scene music: piano accompaniment of "Bread of Life, Living Water" (church hymn
-# recordings are free for home and church use). Not stored in the repo. Failure here is not fatal.
-echo "==> [6/6] Installing the sacrament graphic and downloading the sacrament music"
-MUSIC_PAGE='https://www.churchofjesuschrist.org/media/music/songs/bread-of-life-living-water?lang=eng'
-MUSIC_FALLBACK='https://assets.churchofjesuschrist.org/a6/fa/a6fa4142ee3511eeab89eeeeac1ef623ccb828a4/bread_of_life_living_water.mp3'
+# Sacrament scene music: piano accompaniments of church hymns (free for home and church use),
+# played as a looping playlist. Not stored in the repo. Failure here is not fatal.
+echo "==> [6/6] Installing the sacrament graphic and building the sacrament music playlist"
 MUSIC_DIR="$TARGET_HOME/Documents/sacrament"
-MUSIC_FILE="$MUSIC_DIR/bread-of-life-living-water-piano.mp3"
 as_user mkdir -p "$MUSIC_DIR"
 # The painting (The Good Shepherd) is downloaded and the message is drawn on it; neither is kept in the repo.
 if [ "$INSTALL" != yes ] && [ -s "$MUSIC_DIR/sacrament-graphic.png" ]; then
@@ -240,15 +283,10 @@ else
   as_user python3 -I "$SCRIPT_DIR/tools/make-sacrament-graphic.py" --out "$MUSIC_DIR/sacrament-graphic.png" \
     || echo "WARNING: could not make the sacrament graphic; see tools/make-sacrament-graphic.py" >&2
 fi
-if [ ! -s "$MUSIC_FILE" ]; then
-  # The page lists each recording's URL; pick the piano accompaniment (not guitar/vocal).
-  MUSIC_URL=$(curl -fsSL -A 'Mozilla/5.0' "$MUSIC_PAGE" 2>/dev/null |
-    python3 -c 'import re,sys; m=re.search(r"\"assetType\":\"AUDIO_ACCOMPANIMENT\",\"distributionUrl\":\"([^\"]+\.mp3)\"", sys.stdin.read()); print(m.group(1) if m else "")' || true)
-  as_user mkdir -p "$MUSIC_DIR"
-  as_user curl -fsSL -o "$MUSIC_FILE.part" "${MUSIC_URL:-$MUSIC_FALLBACK}" \
-    && as_user mv "$MUSIC_FILE.part" "$MUSIC_FILE" \
-    || { rm -f "$MUSIC_FILE.part"; echo "WARNING: could not download the sacrament music; fetch it by hand from $MUSIC_PAGE" >&2; }
-fi
+# The hymns listed in audio/sacrament-playlist.txt are downloaded and joined into one file that OBS loops.
+as_user python3 -I "$SCRIPT_DIR/tools/make-sacrament-playlist.py" \
+  --list "$SCRIPT_DIR/audio/sacrament-playlist.txt" --dir "$MUSIC_DIR" \
+  || echo "WARNING: could not build the sacrament playlist; see tools/make-sacrament-playlist.py" >&2
 
 # Optional: pin OBS to the GNOME dock. Only possible where a schema override already
 # sets favorite-apps (the church autoinstall creates one).
