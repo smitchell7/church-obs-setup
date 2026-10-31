@@ -5,10 +5,11 @@
 #     (built by https://github.com/smitchell7/obs-ptz, release v0.0.1-pre1)
 #
 # Usage:  sudo ./setup-obs-flatpak.sh [--install] [--config=NAME | --no-config] [--pin-dock | --no-pin-dock]
-# Safe to run again at any time. By default it installs no software and only refreshes the OBS
-# configuration (scenes, audio, Zoom microphone).
-#   --install                   also install or update the software (OBS, DistroAV, obs-ptz, NDI
-#                               decoder libraries); needed on a new computer
+# Safe to run again at any time. It first checks that OBS, DistroAV, obs-ptz, the NDI decoder
+# libraries and the system tools are installed and installs only what is missing, then refreshes the
+# OBS configuration (scenes, audio, Zoom microphone).
+#   --install                   also update everything that is already installed (OBS, DistroAV,
+#                               obs-ptz, NDI decoder libraries)
 #   --config=NAME / --no-config  install the OBS scenes and camera setup in configs/NAME
 #                               (without either, it asks when run in a terminal)
 #   --pin-dock / --no-pin-dock  answer the "add OBS to the dock?" question up front
@@ -55,72 +56,111 @@ TARGET_HOME=$(getent passwd "$TARGET_USER" | cut -d: -f6)
 [ -d "$TARGET_HOME" ] || { echo "No home directory for $TARGET_USER" >&2; exit 1; }
 as_user() { sudo -u "$TARGET_USER" -H "$@"; }
 
-if [ "$INSTALL" != yes ]; then
-  echo "==> Not installing software (add --install to install or update it)"
-else
-echo "==> [1/6] Installing Flatpak and adding the Flathub remote"
-apt-get update -y
-apt-get install -y flatpak python3-pil curl pulseaudio-utils
-flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-
-echo "==> [2/6] Installing OBS Studio and DistroAV (system-wide)"
-# --or-update installs what is missing and updates what is already there
-flatpak install --system -y --or-update flathub "$OBS_ID"
-flatpak install --system -y --or-update flathub "$OBS_ID.Plugin.DistroAV"
-
-echo "==> [3/6] Letting OBS reach the local network and Avahi (mDNS camera discovery)"
-flatpak override --system --share=network "$OBS_ID"
-flatpak override --system --system-talk-name=org.freedesktop.Avahi "$OBS_ID"
-
-echo "==> [4/6] Installing obs-ptz (PTZ Controls) from the bundled Flatpak"
-BUNDLE="${PTZ_BUNDLE:-}"
-if [ -z "$BUNDLE" ]; then
-  BUNDLE=$(ls "$SCRIPT_DIR"/vendor/$PTZ_ASSET 2>/dev/null | tail -n1 || true)
-fi
-[ -f "$BUNDLE" ] || { echo "No obs-ptz bundle found in $SCRIPT_DIR/vendor; set PTZ_BUNDLE=/path/to/file" >&2; exit 1; }
-# Reinstalling an unchanged bundle fails, so remember which one is installed.
-BUNDLE_STAMP=/var/lib/church-obs-ptz-bundle.sha256
-BUNDLE_SUM=$(sha256sum "$BUNDLE" | cut -d' ' -f1)
-if [ "$(cat "$BUNDLE_STAMP" 2>/dev/null || true)" = "$BUNDLE_SUM" ]; then
-  echo "obs-ptz is already installed from this bundle."
-else
-  flatpak install --system -y --bundle "$BUNDLE"
-  echo "$BUNDLE_SUM" > "$BUNDLE_STAMP"
-fi
-
-echo "==> [5/6] Putting the NDI HX decoder libraries where OBS can find them"
-flatpak install --system -y --or-update flathub \
-  "org.freedesktop.Platform//$FFMPEG_RUNTIME_BRANCH" \
-  "org.freedesktop.Platform.codecs-extra//$CODECS_BRANCH"
-CODECS=$(flatpak info --system --show-location org.freedesktop.Platform.codecs-extra "$CODECS_BRANCH")/files/lib
-PLATFORM=$(flatpak info --system --show-location org.freedesktop.Platform "$FFMPEG_RUNTIME_BRANCH")/files/lib/x86_64-linux-gnu
 NDI_LIBS="$TARGET_HOME/.var/app/$OBS_ID/data/ndi-libs"
-as_user mkdir -p "$NDI_LIBS"
+PTZ_STAMP=/var/lib/church-obs-ptz-bundle.sha256
 
-install_lib() { # source-file dest-name
-  cp -L "$1" "$NDI_LIBS/$2"
-  chown "$TARGET_USER:$TARGET_USER" "$NDI_LIBS/$2"
-  chmod 755 "$NDI_LIBS/$2"
-}
-install_lib "$CODECS/libavcodec.so.61" libavcodec.so.61
-install_lib "$CODECS/libavcodec.so.61" libavcodec-ndi.so.61
-install_lib "$CODECS/libavutil.so.59" libavutil.so.59
-install_lib "$CODECS/libavutil.so.59" libavutil-ndi.so.59
-install_lib "$CODECS/libswresample.so.5" libswresample.so.5
-# libavcodec.so.61 depends on these, which newer OBS runtimes don't provide
-for lib in libvpx.so.11 libjxl.so.0.11 libjxl_threads.so.0.11 libjxl_cms.so.0.11 libSvtAv1Enc.so.3; do
-  install_lib "$PLATFORM/$lib" "$lib"
-done
-as_user flatpak override --user --env=LD_LIBRARY_PATH="$NDI_LIBS" "$OBS_ID"
-
-# Every library we copied must resolve inside the sandbox, otherwise NDI fails silently.
-MISSING=$(as_user flatpak run --command=sh "$OBS_ID" -c \
-  "cd '$NDI_LIBS' && for f in *.so*; do ldd ./\$f | grep 'not found'; done" || true)
-if [ -n "$MISSING" ]; then
-  echo "WARNING: NDI HX decoding will not work, unresolved libraries:" >&2
-  echo "$MISSING" >&2
+# What is missing? Each piece is installed when it is missing; --install also updates what is there.
+NEED_APT=0 NEED_OBS=0 NEED_DISTROAV=0 NEED_PTZ=0 NEED_NDI=0
+for cmd in flatpak curl pactl; do command -v "$cmd" >/dev/null || NEED_APT=1; done
+python3 -c 'import PIL' 2>/dev/null || NEED_APT=1
+if command -v flatpak >/dev/null; then
+  flatpak info --system "$OBS_ID" >/dev/null 2>&1 || NEED_OBS=1
+  flatpak info --system "$OBS_ID.Plugin.DistroAV" >/dev/null 2>&1 || NEED_DISTROAV=1
+  flatpak list --system --columns=application 2>/dev/null | grep -qi 'ptz' || NEED_PTZ=1
+  flatpak info --system "org.freedesktop.Platform//$FFMPEG_RUNTIME_BRANCH" >/dev/null 2>&1 || NEED_NDI=1
+  flatpak info --system "org.freedesktop.Platform.codecs-extra//$CODECS_BRANCH" >/dev/null 2>&1 || NEED_NDI=1
+else
+  NEED_OBS=1 NEED_DISTROAV=1 NEED_PTZ=1 NEED_NDI=1
 fi
-fi # --install
+for lib in libavcodec-ndi.so.61 libavutil-ndi.so.59 libswresample.so.5 libvpx.so.11; do
+  [ -e "$NDI_LIBS/$lib" ] || NEED_NDI=1
+done
+want() { [ "$INSTALL" = yes ] || [ "$1" = 1 ]; }
+
+echo "==> Checking the installed software"
+status() { if [ "$2" = 1 ]; then echo "  $1: MISSING"; else echo "  $1: installed"; fi; }
+status "system tools (flatpak, curl, pactl, python3-pil)" "$NEED_APT"
+status "OBS Studio" "$NEED_OBS"
+status "DistroAV (NDI)" "$NEED_DISTROAV"
+status "obs-ptz (PTZ Controls)" "$NEED_PTZ"
+status "NDI HX decoder libraries" "$NEED_NDI"
+if [ "$INSTALL" = yes ]; then echo "  --install given: installing and updating everything"; fi
+
+if want "$NEED_APT"; then
+  echo "==> [1/6] Installing system tools"
+  apt-get update -y
+  apt-get install -y flatpak python3-pil curl pulseaudio-utils
+fi
+if [ "$INSTALL" = yes ] || [ "$NEED_OBS$NEED_DISTROAV$NEED_PTZ$NEED_NDI" != 0000 ]; then
+  flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+fi
+
+if want "$NEED_OBS"; then
+  echo "==> [2/6] Installing OBS Studio (system-wide)"
+  # --or-update installs what is missing and updates what is already there
+  flatpak install --system -y --or-update flathub "$OBS_ID"
+fi
+if want "$NEED_DISTROAV"; then
+  echo "==> [2/6] Installing DistroAV (NDI)"
+  flatpak install --system -y --or-update flathub "$OBS_ID.Plugin.DistroAV"
+fi
+
+if flatpak info --system "$OBS_ID" >/dev/null 2>&1; then
+  echo "==> [3/6] Letting OBS reach the local network and Avahi (mDNS camera discovery)"
+  flatpak override --system --share=network "$OBS_ID"
+  flatpak override --system --system-talk-name=org.freedesktop.Avahi "$OBS_ID"
+fi
+
+if want "$NEED_PTZ"; then
+  echo "==> [4/6] Installing obs-ptz (PTZ Controls) from the bundled Flatpak"
+  BUNDLE="${PTZ_BUNDLE:-}"
+  if [ -z "$BUNDLE" ]; then
+    BUNDLE=$(ls "$SCRIPT_DIR"/vendor/$PTZ_ASSET 2>/dev/null | tail -n1 || true)
+  fi
+  [ -f "$BUNDLE" ] || { echo "No obs-ptz bundle found in $SCRIPT_DIR/vendor; set PTZ_BUNDLE=/path/to/file" >&2; exit 1; }
+  # Reinstalling an unchanged bundle fails, so remember which one is installed.
+  BUNDLE_SUM=$(sha256sum "$BUNDLE" | cut -d' ' -f1)
+  if [ "$NEED_PTZ" = 0 ] && [ "$(cat "$PTZ_STAMP" 2>/dev/null || true)" = "$BUNDLE_SUM" ]; then
+    echo "obs-ptz is already installed from this bundle."
+  else
+    flatpak install --system -y --bundle "$BUNDLE"
+    echo "$BUNDLE_SUM" > "$PTZ_STAMP"
+  fi
+fi
+
+if want "$NEED_NDI"; then
+  echo "==> [5/6] Putting the NDI HX decoder libraries where OBS can find them"
+  flatpak install --system -y --or-update flathub \
+    "org.freedesktop.Platform//$FFMPEG_RUNTIME_BRANCH" \
+    "org.freedesktop.Platform.codecs-extra//$CODECS_BRANCH"
+  CODECS=$(flatpak info --system --show-location org.freedesktop.Platform.codecs-extra "$CODECS_BRANCH")/files/lib
+  PLATFORM=$(flatpak info --system --show-location org.freedesktop.Platform "$FFMPEG_RUNTIME_BRANCH")/files/lib/x86_64-linux-gnu
+  as_user mkdir -p "$NDI_LIBS"
+
+  install_lib() { # source-file dest-name
+    cp -L "$1" "$NDI_LIBS/$2"
+    chown "$TARGET_USER:$TARGET_USER" "$NDI_LIBS/$2"
+    chmod 755 "$NDI_LIBS/$2"
+  }
+  install_lib "$CODECS/libavcodec.so.61" libavcodec.so.61
+  install_lib "$CODECS/libavcodec.so.61" libavcodec-ndi.so.61
+  install_lib "$CODECS/libavutil.so.59" libavutil.so.59
+  install_lib "$CODECS/libavutil.so.59" libavutil-ndi.so.59
+  install_lib "$CODECS/libswresample.so.5" libswresample.so.5
+  # libavcodec.so.61 depends on these, which newer OBS runtimes don't provide
+  for lib in libvpx.so.11 libjxl.so.0.11 libjxl_threads.so.0.11 libjxl_cms.so.0.11 libSvtAv1Enc.so.3; do
+    install_lib "$PLATFORM/$lib" "$lib"
+  done
+  as_user flatpak override --user --env=LD_LIBRARY_PATH="$NDI_LIBS" "$OBS_ID"
+
+  # Every library we copied must resolve inside the sandbox, otherwise NDI fails silently.
+  MISSING=$(as_user flatpak run --command=sh "$OBS_ID" -c \
+    "cd '$NDI_LIBS' && for f in *.so*; do ldd ./\$f | grep 'not found'; done" || true)
+  if [ -n "$MISSING" ]; then
+    echo "WARNING: NDI HX decoding will not work, unresolved libraries:" >&2
+    echo "$MISSING" >&2
+  fi
+fi
 
 # OBS scene collection and camera setup (configs/<name>/: single-camera or dual-camera).
 echo "==> Choosing the OBS configuration"
