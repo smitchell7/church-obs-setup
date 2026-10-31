@@ -82,6 +82,11 @@ HX2/HX3 cameras.
     the scene file as well as `monitoring_type: 2`; with only the type set, nothing is sent to Zoom. If Zoom
     hears nothing, check Edit > Advanced Audio Properties in OBS: "USB Audio" and "Sacrament Music" must say
     "Monitor and Output".
+  - Zoom video: OBS's Virtual Camera needs the `v4l2loopback` kernel module. When it is not loaded, OBS loads
+    it itself with `pkexec`, which asks for an admin password every time. The installer installs
+    `v4l2loopback-dkms` and loads the module at boot with OBS's own options
+    (`/etc/modprobe.d/obs-virtualcam.conf`, `/etc/modules-load.d/obs-virtualcam.conf`), so Start Virtual
+    Camera needs no password. In Zoom pick the camera "OBS Virtual Camera".
   - Remote control: OBS's WebSocket server is switched on by default (port 4455, password required). The
     password is `OBS_WEBSOCKET_PASSWORD` in `secrets.env` for the autoinstall, or the same variable when
     running the script by hand; if neither is set, the script uses its built-in default. That default is

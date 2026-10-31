@@ -63,6 +63,7 @@ PTZ_STAMP=/var/lib/church-obs-ptz-bundle.sha256
 NEED_APT=0 NEED_OBS=0 NEED_DISTROAV=0 NEED_PTZ=0 NEED_NDI=0
 for cmd in flatpak curl pactl ffmpeg; do command -v "$cmd" >/dev/null || NEED_APT=1; done
 python3 -c 'import PIL' 2>/dev/null || NEED_APT=1
+modinfo v4l2loopback >/dev/null 2>&1 || NEED_APT=1   # OBS Virtual Camera
 if command -v flatpak >/dev/null; then
   flatpak info --system "$OBS_ID" >/dev/null 2>&1 || NEED_OBS=1
   flatpak info --system "$OBS_ID.Plugin.DistroAV" >/dev/null 2>&1 || NEED_DISTROAV=1
@@ -79,7 +80,7 @@ want() { [ "$INSTALL" = yes ] || [ "$1" = 1 ]; }
 
 echo "==> Checking the installed software"
 status() { if [ "$2" = 1 ]; then echo "  $1: MISSING"; else echo "  $1: installed"; fi; }
-status "system tools (flatpak, curl, pactl, ffmpeg, python3-pil)" "$NEED_APT"
+status "system tools (flatpak, curl, pactl, ffmpeg, python3-pil, v4l2loopback)" "$NEED_APT"
 status "OBS Studio" "$NEED_OBS"
 status "DistroAV (NDI)" "$NEED_DISTROAV"
 status "obs-ptz (PTZ Controls)" "$NEED_PTZ"
@@ -89,7 +90,7 @@ if [ "$INSTALL" = yes ]; then echo "  --install given: installing and updating e
 if want "$NEED_APT"; then
   echo "==> [1/6] Installing system tools"
   apt-get update -y
-  apt-get install -y flatpak python3-pil curl pulseaudio-utils ffmpeg
+  apt-get install -y flatpak python3-pil curl pulseaudio-utils ffmpeg v4l2loopback-dkms
 fi
 if [ "$INSTALL" = yes ] || [ "$NEED_OBS$NEED_DISTROAV$NEED_PTZ$NEED_NDI" != 0000 ]; then
   flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
@@ -160,6 +161,24 @@ if want "$NEED_NDI"; then
     echo "WARNING: NDI HX decoding will not work, unresolved libraries:" >&2
     echo "$MISSING" >&2
   fi
+fi
+
+# OBS Virtual Camera (the video Zoom picks up). It needs the v4l2loopback kernel module; when the module is
+# not loaded, OBS loads it with pkexec, which asks for an admin password every time. Load it at boot, with the
+# options OBS itself uses, so starting the virtual camera needs no password.
+echo "==> Loading the virtual camera module at boot (no password prompt when starting OBS's Virtual Camera)"
+cat > /etc/modprobe.d/obs-virtualcam.conf <<'EOF'
+# OBS Virtual Camera (setup-obs-flatpak.sh): the options OBS passes when it loads the module itself.
+options v4l2loopback exclusive_caps=1 card_label="OBS Virtual Camera"
+EOF
+echo v4l2loopback > /etc/modules-load.d/obs-virtualcam.conf
+if ! modinfo v4l2loopback >/dev/null 2>&1; then
+  echo "WARNING: the v4l2loopback module is not available for kernel $(uname -r); OBS's Virtual Camera will not work until it is (sudo apt install v4l2loopback-dkms, then reboot)." >&2
+elif ! grep -q '^v4l2loopback ' /proc/modules; then
+  modprobe v4l2loopback || echo "WARNING: could not load v4l2loopback now; it loads at the next boot." >&2
+fi
+if mokutil --sb-state 2>/dev/null | grep -qi 'enabled'; then
+  echo "NOTE: Secure Boot is on. If the virtual camera does not appear, the v4l2loopback module may need its signing key enrolled (see 'mokutil --import')." >&2
 fi
 
 # OBS scene collection and camera setup (configs/<name>/: single-camera or dual-camera).
