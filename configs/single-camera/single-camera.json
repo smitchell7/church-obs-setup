@@ -3467,8 +3467,8 @@
             "name": "Sacrament"
         }
     ],
-    "current_scene": "Sacrament",
-    "current_program_scene": "Sacrament",
+    "current_scene": "Full Room - p3",
+    "current_program_scene": "Full Room - p3",
     "canvases": [],
     "current_transition": "Fade",
     "transition_duration": 300,
