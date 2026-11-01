@@ -1,16 +1,16 @@
 # Windows Script Instructions
 
-  # Scene Collection Note
-  There are two Scene collections you can install depending on your building camera configuration and one scene collection that is intended for use at stake conference.
-  Use the single camera setup code to install the single camera Scene Collection and the dual camera code to install the dual camera configuration.
-  The single camera Scene Collection is what is wanted for the Alkire and Quail Buildings
-  The Dual Camera Scene Collection is what is wanted for the Independence Building (Stake Center)
-  The Stake Conference Scene Collection is intended only for use for meetings where an additional computer will be generating and sending overlay graphics to OBS over NDI. It is based on the Dual Camera Scene Collection
+# Scene Collection information
+  There are three total Scene collections you can install - single camera, dual camera and stake conference - depending on the number of cameras installed in your building and if you need the additional scenes used for stake conference broadcasts
+  use the code labeled below for the scene collection you want to install
+  The single camera Scene Collection is intended for use in the Alkire and Quail Building
+  The Dual Camera Scene Collection is intended for use in the Independence Building (Stake Center)
+  The Stake Conference Scene Collection is intended for use for meetings where an additional computer will be generating and sending overlay graphics to OBS using NDI. It is based on the Dual Camera Scene Collection. If it is being used in the Alkire or Quail buildings for a meeting ONLY the scenes labeled left will work correctly
 
 # First Time Windows Install
 
   1. Open **PowerShell as administrator** (Start, type `powershell`, right-click > Run as administrator)
-  2. Run one of the following depending on desired camera configuration
+  2. Run one of the following depending on required camera configuration for your building
 * **Single Camera Configuration**
     ```powershell
     cd $env:TEMP
@@ -32,7 +32,7 @@
     powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1 -Config Stake-Conference
     ```
 
-# Updating configuraiton on Existing Installation
+# Updating configuraiton on Existing Installations
 * **Single Camera Configuration**
     ```powershell
     cd c:\church-obs-setup
@@ -48,4 +48,4 @@
     cd c:\church-obs-setup
     powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1 -Config stake-conference
     ```
-If you need to add the scene collection you do not currently have, run the update script for the scene collection you want to add to your computer
+If you need to add one of the scene collections you do not currently have, run the update script for the scene collection you want to add to your computer
