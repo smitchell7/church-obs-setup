@@ -1,12 +1,17 @@
 /* Hum Notch: a VST 2.x audio effect for OBS that removes mains hum.
  *
  * Four narrow notch filters (RBJ biquad, Q 30, about 2 Hz wide at 60 Hz) at 60, 120, 180 and 240 Hz on
- * each channel: the same filters as audio/hum-notch.conf. It has no settings; in OBS add it to the
- * microphone source (Filters > + > VST 2.x Plug-in > HumNotch) and turn it on and off with the eye icon.
+ * each channel: the same filters as audio/hum-notch.conf. In OBS add it to the microphone source
+ * (Filters > + > VST 2.x Plug-in > HumNotch) and turn it on and off with the eye icon. Its one setting,
+ * Amount (default 100%), blends between the filtered and the plain sound.
+ *
+ * It must have at least one parameter: OBS saves a VST filter's settings by copying its parameter list
+ * with &params[0], which aborts OBS (checked builds, e.g. the flatpak) when the list is empty.
  *
  * Written against the VST 2.4 binary interface directly (no SDK). Build and install with build.sh.
  */
 #include <math.h>
+#include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -44,7 +49,7 @@ struct AEffect {
 #define kEffectMagic 0x56737450 /* 'VstP' */
 #define effFlagsCanReplacing (1 << 4)
 enum {
-	effOpen = 0, effClose = 1, effGetParamName = 8, effSetSampleRate = 10, effSetBlockSize = 11,
+	effOpen = 0, effClose = 1, effGetParamLabel = 6, effGetParamDisplay = 7, effGetParamName = 8, effSetSampleRate = 10, effSetBlockSize = 11,
 	effMainsChanged = 12, effGetPlugCategory = 35, effGetEffectName = 45, effGetVendorString = 47,
 	effGetProductString = 48, effGetVendorVersion = 49, effCanDo = 51, effGetVstVersion = 58,
 };
@@ -56,6 +61,7 @@ typedef struct { double z1, z2; } State;
 typedef struct {
 	AEffect effect;
 	double rate;
+	float strength; /* "Amount", 0..1: 1 = full notch, 0 = no effect */
 	Coeffs c[NOTCHES];
 	State s[CHANNELS][NOTCHES];
 } Plugin;
@@ -92,19 +98,30 @@ static float filter(Plugin *p, int ch, float in)
 static void process_replacing(AEffect *e, float **in, float **out, int32_t frames)
 {
 	Plugin *p = (Plugin *)e;
+	double k = p->strength;
 	for (int ch = 0; ch < CHANNELS; ch++)
-		for (int32_t i = 0; i < frames; i++) out[ch][i] = filter(p, ch, in[ch][i]);
+		for (int32_t i = 0; i < frames; i++) {
+			float x = in[ch][i];
+			out[ch][i] = (float)(x + k * (filter(p, ch, x) - x));
+		}
 }
 
 static void process_accumulating(AEffect *e, float **in, float **out, int32_t frames)
 {
 	Plugin *p = (Plugin *)e;
+	double k = p->strength;
 	for (int ch = 0; ch < CHANNELS; ch++)
-		for (int32_t i = 0; i < frames; i++) out[ch][i] += filter(p, ch, in[ch][i]);
+		for (int32_t i = 0; i < frames; i++) {
+			float x = in[ch][i];
+			out[ch][i] += (float)(x + k * (filter(p, ch, x) - x));
+		}
 }
 
-static void set_parameter(AEffect *e, int32_t i, float v) { (void)e; (void)i; (void)v; }
-static float get_parameter(AEffect *e, int32_t i) { (void)e; (void)i; return 0.0f; }
+static void set_parameter(AEffect *e, int32_t i, float v)
+{
+	if (i == 0) ((Plugin *)e)->strength = v < 0 ? 0 : v > 1 ? 1 : v;
+}
+static float get_parameter(AEffect *e, int32_t i) { return i == 0 ? ((Plugin *)e)->strength : 0.0f; }
 
 static intptr_t copy_str(void *dst, const char *s, size_t max)
 {
@@ -122,6 +139,12 @@ static intptr_t dispatcher(AEffect *e, int32_t op, int32_t index, intptr_t value
 	case effClose: free(p); return 1;
 	case effSetSampleRate: set_rate(p, opt); return 1;
 	case effMainsChanged: memset(p->s, 0, sizeof p->s); return 1;
+	case effGetParamName: return index == 0 ? copy_str(ptr, "Amount", 8) : 0;
+	case effGetParamLabel: return index == 0 ? copy_str(ptr, "%", 8) : 0;
+	case effGetParamDisplay:
+		if (index != 0 || !ptr) return 0;
+		snprintf((char *)ptr, 8, "%d", (int)(p->strength * 100 + 0.5f));
+		return 1;
 	case effGetPlugCategory: return kPlugCategEffect;
 	case effGetEffectName: return copy_str(ptr, "Hum Notch", 32);
 	case effGetProductString: return copy_str(ptr, "Hum Notch 60/120/180/240 Hz", 64);
@@ -145,11 +168,13 @@ __attribute__((visibility("default"))) AEffect *VSTPluginMain(HostCallback host)
 	e->processReplacing = process_replacing;
 	e->setParameter = set_parameter;
 	e->getParameter = get_parameter;
+	e->numParams = 1;
 	e->numInputs = e->numOutputs = CHANNELS;
 	e->flags = effFlagsCanReplacing;
 	e->uniqueID = 0x48756d4e; /* 'HumN' */
 	e->version = 1000;
 	e->object = p;
+	p->strength = 1.0f;
 	set_rate(p, 48000.0);
 	return e;
 }

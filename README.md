@@ -146,4 +146,5 @@ drop-in for future logins and loads the filter now; then set OBS's "USB Audio" d
 `tools/hum-notch-vst/` is a tiny VST 2.x plugin with the same four notches. Build and install it with
 `tools/hum-notch-vst/build.sh` (normal user; needs `gcc`), then in OBS: right-click the microphone source >
 Filters > + > VST 2.x Plug-in > HumNotch. The eye icon next to the filter turns it on and off (no audio blip).
+"Open Plug-in Interface" has no window; its one setting, Amount (default 100%), is kept with the filter.
 Use it on the plain hardware microphone, not on "USB Audio (hum filtered)" (that would filter twice).
