@@ -386,6 +386,8 @@
                         "visca_zoom_speed_max": 7,
                         "visca_focus_speed_max": 7,
                         "protocol_trace": false,
+                        "power_on_at_startup": true,
+                        "power_off_at_shutdown": true,
                         "preset_order": [
                             {
                                 "id": "camera:0"
@@ -531,6 +533,8 @@
                         "visca_zoom_speed_max": 7,
                         "visca_focus_speed_max": 7,
                         "protocol_trace": false,
+                        "power_on_at_startup": true,
+                        "power_off_at_shutdown": true,
                         "preset_order": [
                             {
                                 "id": "camera:0"
