@@ -112,6 +112,50 @@ HX2/HX3 cameras.
   the list and run the installer again; it downloads only what is new. The music is not stored in this repo.
 - Without the HX libraries, HX cameras show black video with "NDI video decoder not found".
 
+## Install OBS on a Windows computer
+
+One run installs everything and configures it. From an elevated PowerShell (right-click, Run as
+administrator), signed in as the person who will use OBS:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1 -Config single-camera   # or dual-camera
+```
+
+The script can be downloaded on its own and run from anywhere: it installs Git (via `winget`), clones this
+repo to `C:\church-obs-setup` (or updates it there with `git pull`), and carries on from that checkout, so a
+computer always runs the current version. Run it again at any time to update; close OBS first. It then:
+
+- installs OBS Studio 33+ and the NDI Runtime (`winget`), and the latest DistroAV and obs-ptz releases from
+  GitHub (obs-ptz is upstream `glikely/obs-ptz`, whose 1.0 betas use the same preset format as these configs;
+  `-PtzInstaller C:\path\...-Installer.exe` uses another build);
+- installs ffmpeg (`winget`, for the playlist) and **VB-Audio Virtual Cable**, the virtual microphone for Zoom.
+  VB-CABLE is donationware with its own licence (<https://vb-audio.com/Services/licensing.htm>); its setup
+  window opens: click "Install Driver" and accept. It needs a Windows restart: restart, then run the script
+  again to finish;
+- installs the scene collection (`-Config`, else it asks; `-NoConfig` skips it; an existing file is saved as
+  `*.bak`). The "USB Audio" source becomes a Windows (WASAPI) input on the Sound Blaster, else a USB input,
+  else (with a warning) another real input, never "NDI Webcam Audio", whose sound is poor; plug the USB
+  input in before running it. `-AudioDevice "part of its name"` picks another;
+- points OBS's audio monitoring at "CABLE Input (VB-Audio Virtual Cable)", so the USB input and the
+  sacrament music go to Zoom: in Zoom pick the microphone **CABLE Output (VB-Audio Virtual Cable)**;
+- adds a firewall rule for NDI, makes the sacrament graphic, and builds the sacrament playlist from
+  `audio\sacrament-playlist.txt` (`tools\make-sacrament-playlist.ps1`) in `Documents\sacrament`.
+
+**By hand, once per computer:**
+
+- Installing VB-CABLE can make "CABLE Input" the Windows default speaker, so the computer goes silent and
+  everything it plays reaches Zoom. Set the speaker back (taskbar speaker icon, e.g. "Speakers (Realtek
+  Audio)"); OBS's monitoring stays on CABLE Input.
+- Zoom, Settings > Audio: **Microphone** "CABLE Output (VB-Audio Virtual Cable)"; **Speaker** the
+  computer's speakers, never "CABLE Input"; and **Original sound for musicians** turned on (in the meeting,
+  the "Original sound" button must be on). With Zoom's background noise suppression instead, the organ,
+  piano and held notes are removed as noise and the music barely comes through. If the option is missing,
+  the Zoom account's web settings (zoom.us > Settings > Audio) must allow it. Camera: "OBS Virtual Camera".
+
+Options: `-Branch` (default `windows`), `-RepoUrl`, `-RepoDir`. Not covered on Windows: the GNOME dock, the
+OBS WebSocket password, and the Ubuntu autoinstall. Testing it, and preparing a laptop to test on:
+[docs/windows-testing.md](docs/windows-testing.md).
+
 ## Automated Ubuntu install (autoinstall)
 
 `autoinstall/` holds a template for installing Ubuntu on a new computer: Mountain time
