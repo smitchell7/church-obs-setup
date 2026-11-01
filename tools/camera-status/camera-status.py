@@ -135,8 +135,9 @@ def present(found, results):
 
 
 def show_missing(missing):
-    for name, _, _ in missing:
-        print("  Error: %s not found" % name)
+    for name, host, _ in missing:
+        print("  Error: %s not found. Check that %s is plugged in, connected to the network and at its "
+              "address (%s)" % (name, name, host))
 
 
 def menu():

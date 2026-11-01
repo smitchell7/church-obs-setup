@@ -77,10 +77,10 @@ The script asks both cameras in `cameras.json`, then shows what it found:
       PTZ Camera (192.168.111.245:5678): ON
 
 - **Only 192.168.111.246 answers**: it is shown as **PTZ Right**, with an error that the left camera is
-  missing. Check that PTZ Left is plugged in, connected to the network, and at its address.
+  missing and what to check.
 
       PTZ Right (192.168.111.246:5678): ON
-      Error: PTZ Left not found
+      Error: PTZ Left not found. Check that PTZ Left is plugged in, connected to the network and at its address (192.168.111.245)
 
 - **No camera answers**: each is shown as **NO ANSWER**, with the reason, and the script ends without the
   menu.
@@ -148,7 +148,8 @@ The result looks like the one after choosing 2 or 3 in the menu.
 - **STANDBY**: the camera is powered off (in standby) but still on the network.
 - **NO ANSWER**: the camera could not be reached. Check that it is plugged in, connected to the network, and
   at the address shown.
-- **Error: PTZ Left not found**: the other camera answered but this one did not.
+- **Error: PTZ Left not found**: the other camera answered but this one did not. The message says what to
+  check, and the address the script tried.
 
 ## Options
 

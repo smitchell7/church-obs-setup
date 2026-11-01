@@ -144,7 +144,9 @@ function Select-Single($results) {
 }
 
 function Show-Missing($missing) {
-    foreach ($cam in $missing) { Write-Host "  Error: $($cam.Source) not found" }
+    foreach ($cam in $missing) {
+        Write-Host ("  Error: {0} not found. Check that {0} is plugged in, connected to the network and at its address ({1})" -f $cam.Source, $cam.Host)
+    }
 }
 
 # The change picked from the menu: '' for no change, 'On', or 'Standby'
