@@ -15,19 +15,32 @@
     cd ~
     sudo git clone https://github.com/smitchell7/church-obs-setup.git
     cd church-obs-setup
-    sudo ./setup-obs-flatpak.sh --config=single-camera
+    sudo ./setup-obs-flatpak.sh --config=single-camera --pin-dock
     ```
 * **Dual Camera Configuration**
     ```terminal
     cd ~
     sudo git clone https://github.com/smitchell7/church-obs-setup.git
     cd church-obs-setup
-    sudo ./setup-obs-flatpak.sh --config=dual-camera
+    sudo ./setup-obs-flatpak.sh --config=dual-camera --pin-dock
     ```
 * **Stake Conference Camera Configuration**
     ```terminal
     cd ~
     sudo git clone https://github.com/smitchell7/church-obs-setup.git
     cd church-obs-setup
-    sudo ./setup-obs-flatpak.sh --config=stake-conference
+    sudo ./setup-obs-flatpak.sh --config=stake-conference --pin-dock
+    ```
+# Updating configuraiton on Existing Installation
+the first time you update things you may need to do this
+    ```terminal
+    cd ~/church-obs-setup
+    sudo chown -R test:test ~/church-obs-setup
+    ```
+* **Single Camera Configuration**
+    ```terminal
+    cd church-obs-setup
+    git checkout main
+    git pull
+    sudo ./setup-obs-flatpak.sh --config=single-camera
     ```
