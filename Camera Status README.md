@@ -70,7 +70,7 @@ cd C:\church-obs-setup
 powershell -ExecutionPolicy Bypass -File .\tools\camera-status\camera-status.ps1
 ```
 
-## Status Menu
+## Use Menu to update camera status
 
 The script asks both cameras in `cameras.json`, then shows what it found:
 
@@ -80,25 +80,32 @@ The script asks both cameras in `cameras.json`, then shows what it found:
   `PTZ Right (192.168.111.246:5678): STANDBY`
 
 - **Only 192.168.111.245 answers** (Expected Result in Alkire and Quail Buildings): it is shown as **PTZ Camera**, and the second camera is not mentioned. 
+    
     If you are in the independence building and this is the result you receive, check that PTZ Right is Plugged in, connected to the network and at its address (192.168.111.246)
 
   `PTZ Camera (192.168.111.245:5678): ON`
 
 - **Only 192.168.111.246 answers**: it is shown as **PTZ Right**, with an error that the left camera is
-  missing and what to check.
+  missing
 
   `PTZ Right (192.168.111.246:5678): ON`\
   `Error: PTZ Left not found. Check that PTZ Left is plugged in, connected to the network and at its address (192.168.111.245)`
 
 - **No camera answers**: each is shown as **NO ANSWER**, with the reason, followed by an error that says
-  what to check and where each camera should be. The script ends without the menu.
+  what to check and what IP address each camera should be at. The script ends without the menu.
 
   `PTZ Left (192.168.111.245:5678): NO ANSWER (timed out connecting)`\
   `PTZ Right (192.168.111.246:5678): NO ANSWER (timed out connecting)`\
   `Error: PTZ cameras not found. Check that this computer is connected to the church network, check that all PTZ cameras are plugged in, connected to the network and at the correct addresses. For a one camera building the address is (192.168.111.245) and for two camera buildings the addresses are (192.168.111.245) for the left camera and (192.168.111.246) for the right camera`
 
+## What the reported states mean
 
-## Status Setting Menu
+- **ON**: the camera is powered on.
+- **STANDBY**: the camera is powered off (in standby) but still on the network.
+- **NO ANSWER**: the camera could not be reached. Check that it is plugged in, connected to the network, and
+  at the address shown.
+
+## Status Options Menu
 
 After it shows each camera's power state, the script asks what to do:
 This will change the state for all cameras reported by the script to the selected status
@@ -128,7 +135,7 @@ that was already in that state still gets the command, and shows **(it already w
 down when the script stopped waiting. That is normal, since a camera can take several seconds to turn on.
 Run the script again to see the new state.
 
-## Skip the menu (set)
+## Directly Set Camera Status Without Menu
 
 To turn the cameras on or put them in standby without the menu, add
 `--set on` or `--set standby` (Ubuntu), or `-Set On` or `-Set Standby` (Windows). It does the same as
@@ -164,14 +171,7 @@ powershell -ExecutionPolicy Bypass -File .\tools\camera-status\camera-status.ps1
 
 The result looks like the one after choosing 2 or 3 in the menu.
 
-## What the states mean
 
-- **ON**: the camera is powered on.
-- **STANDBY**: the camera is powered off (in standby) but still on the network.
-- **NO ANSWER**: the camera could not be reached. Check that it is plugged in, connected to the network, and
-  at the address shown.
-- **Error: PTZ Left not found**: the other camera answered but this one did not. The message says what to
-  check, and the address the script tried.
 
 ## Options
 
