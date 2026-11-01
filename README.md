@@ -140,3 +140,10 @@ ground-lift/isolation transformer on the audio line, and unplug the ethernet bri
 
 No restart needed (safe during a stream): run `tools/install-hum-notch.sh [mic-name]` as the normal user. It installs the
 drop-in for future logins and loads the filter now; then set OBS's "USB Audio" device to "USB Audio (hum filtered)".
+
+### Hum filter as an OBS filter (easy on/off)
+
+`tools/hum-notch-vst/` is a tiny VST 2.x plugin with the same four notches. Build and install it with
+`tools/hum-notch-vst/build.sh` (normal user; needs `gcc`), then in OBS: right-click the microphone source >
+Filters > + > VST 2.x Plug-in > HumNotch. The eye icon next to the filter turns it on and off (no audio blip).
+Use it on the plain hardware microphone, not on "USB Audio (hum filtered)" (that would filter twice).
