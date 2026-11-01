@@ -63,10 +63,10 @@ unless they say "at the laptop".
 1. Download only the script and run it, as a fresh computer would:
    ```powershell
    cd $env:TEMP
-   irm https://raw.githubusercontent.com/smitchell7/church-obs-setup/windows/setup-obs-windows.ps1 -OutFile setup-obs-windows.ps1
+   irm https://raw.githubusercontent.com/smitchell7/church-obs-setup/HEAD/setup-obs-windows.ps1 -OutFile setup-obs-windows.ps1
    powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1 -Config single-camera
    ```
-2. Expect, in order: Git installed; the repo cloned to `C:\church-obs-setup` on branch `windows`; the script
+2. Expect, in order: Git installed; the repo cloned to `C:\church-obs-setup` on its default branch; the script
    continuing from there (`[2/7]` onwards); OBS 33+, NDI Runtime, DistroAV, obs-ptz, ffmpeg installed.
 3. **At the laptop:** the VB-CABLE window opens. Click "Install Driver" and accept. The script then says a
    restart is needed. Restart Windows and sign back in.

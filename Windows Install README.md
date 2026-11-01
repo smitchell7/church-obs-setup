@@ -14,21 +14,21 @@
 * **Single Camera Configuration**
     ```powershell
     cd $env:TEMP
-    irm https://raw.githubusercontent.com/smitchell7/church-obs-setup/windows/setup-obs-windows.ps1 -OutFile setup-obs-windows.ps1
+    irm https://raw.githubusercontent.com/smitchell7/church-obs-setup/HEAD/setup-obs-windows.ps1 -OutFile setup-obs-windows.ps1
     powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1 -Config single-camera
     ```
     
 * **Dual Camera Configuration**
     ```powershell
     cd $env:TEMP
-    irm https://raw.githubusercontent.com/smitchell7/church-obs-setup/windows/setup-obs-windows.ps1 -OutFile setup-obs-windows.ps1
+    irm https://raw.githubusercontent.com/smitchell7/church-obs-setup/HEAD/setup-obs-windows.ps1 -OutFile setup-obs-windows.ps1
     powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1 -Config dual-camera
     ```
     
 * **Stake Conference Camera Configuration**
     ```powershell
     cd $env:TEMP
-    irm https://raw.githubusercontent.com/smitchell7/church-obs-setup/main/setup-obs-windows.ps1 -OutFile setup-obs-windows.ps1
+    irm https://raw.githubusercontent.com/smitchell7/church-obs-setup/HEAD/setup-obs-windows.ps1 -OutFile setup-obs-windows.ps1
     powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1 -Config Stake-Conference
     ```
 

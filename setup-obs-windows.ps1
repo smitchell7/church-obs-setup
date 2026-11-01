@@ -25,7 +25,7 @@
                         not NDI Webcam Audio or the virtual cable.
 .PARAMETER PtzInstaller Use this obs-ptz installer .exe instead of the latest glikely/obs-ptz release.
 .PARAMETER RepoUrl      Where to clone this repo from.
-.PARAMETER Branch       Which branch of the repo to use.
+.PARAMETER Branch       Which branch of the repo to use. Default: the repo's default branch on GitHub.
 .PARAMETER RepoDir      Where the checkout lives.
 #>
 param(
@@ -34,7 +34,7 @@ param(
     [string]$AudioDevice,
     [string]$PtzInstaller,
     [string]$RepoUrl = 'https://github.com/smitchell7/church-obs-setup.git',
-    [string]$Branch = 'windows',
+    [string]$Branch,
     [string]$RepoDir = (Join-Path $env:SystemDrive 'church-obs-setup'),
     [switch]$FromCheckout   # internal: set when this script re-runs itself from the checkout
 )
@@ -90,6 +90,12 @@ if (-not $FromCheckout) {
         Write-Host "    Updating $RepoDir"
         & git -C $RepoDir fetch --quiet origin
         if ($LASTEXITCODE -ne 0) { Fail "git fetch failed in $RepoDir." }
+        if (-not $Branch) {
+            # No -Branch: follow the remote's default branch, which may have changed since the clone.
+            & git -C $RepoDir remote set-head origin --auto *> $null
+            $Branch = (& git -C $RepoDir symbolic-ref --short refs/remotes/origin/HEAD) -replace '^origin/', ''
+            if ($LASTEXITCODE -ne 0 -or -not $Branch) { Fail "Could not find the default branch of origin in $RepoDir." }
+        }
         & git -C $RepoDir checkout --quiet $Branch
         if ($LASTEXITCODE -ne 0) { Fail "Could not switch $RepoDir to branch $Branch (local changes there?)." }
         & git -C $RepoDir pull --quiet --ff-only origin $Branch
@@ -97,8 +103,13 @@ if (-not $FromCheckout) {
     } elseif (Test-Path $RepoDir) {
         Fail "$RepoDir exists but is not a git checkout. Move it away (or pass -RepoDir) and run this again."
     } else {
-        Write-Host "    Cloning $RepoUrl ($Branch) to $RepoDir"
-        & git clone --quiet --branch $Branch $RepoUrl $RepoDir
+        if ($Branch) {
+            Write-Host "    Cloning $RepoUrl ($Branch) to $RepoDir"
+            & git clone --quiet --branch $Branch $RepoUrl $RepoDir
+        } else {
+            Write-Host "    Cloning $RepoUrl (default branch) to $RepoDir"
+            & git clone --quiet $RepoUrl $RepoDir
+        }
         if ($LASTEXITCODE -ne 0) { Fail "git clone of $RepoUrl failed." }
     }
     Write-Host "    At $(git -C $RepoDir log -1 --format='%h %s')"

@@ -152,7 +152,7 @@ computer always runs the current version. Run it again at any time to update; cl
   piano and held notes are removed as noise and the music barely comes through. If the option is missing,
   the Zoom account's web settings (zoom.us > Settings > Audio) must allow it. Camera: "OBS Virtual Camera".
 
-Options: `-Branch` (default `windows`), `-RepoUrl`, `-RepoDir`. Not covered on Windows: the GNOME dock, the
+Options: `-Branch` (default: the repo's default branch), `-RepoUrl`, `-RepoDir`. Not covered on Windows: the GNOME dock, the
 OBS WebSocket password, and the Ubuntu autoinstall. Testing it, and preparing a laptop to test on:
 [docs/windows-testing.md](docs/windows-testing.md).
 
