@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 # Install OBS Studio (Flatpak) with the plugins this setup needs:
 #   - DistroAV (NDI) from Flathub, plus the FFmpeg libraries NDI needs to decode HX2/HX3 cameras
+#   - Downstream Keyer (overlay scenes kept on top of every scene) from Flathub
 #   - obs-ptz (PTZ Controls) as a Flatpak extension, from the bundle in vendor/
 #     (built by https://github.com/smitchell7/obs-ptz, release v0.0.1-pre1)
 #
 # Usage:  sudo ./setup-obs-flatpak.sh [--install] [--config=NAME | --no-config] [--pin-dock | --no-pin-dock]
-# Safe to run again at any time. It first checks that OBS, DistroAV, obs-ptz, the NDI decoder
-# libraries and the system tools are installed and installs only what is missing, then refreshes the
-# OBS configuration (scenes, audio, Zoom microphone).
+# Safe to run again at any time. It first checks that OBS, DistroAV, Downstream Keyer, obs-ptz, the NDI
+# decoder libraries and the system tools are installed and installs only what is missing, then refreshes
+# the OBS configuration (scenes, audio, Zoom microphone).
 #   --install                   also update everything that is already installed (OBS, DistroAV,
-#                               obs-ptz, NDI decoder libraries)
+#                               Downstream Keyer, obs-ptz, NDI decoder libraries)
 #   --config=NAME / --no-config  install the OBS scenes and camera setup in configs/NAME
 #                               (without either, it asks when run in a terminal)
 #   --pin-dock / --no-pin-dock  answer the "add OBS to the dock?" question up front
@@ -19,6 +20,7 @@
 set -euo pipefail
 
 OBS_ID=com.obsproject.Studio
+DSK_ID=$OBS_ID.Plugin.DownstreamKeyer
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 PTZ_ASSET='obs-ptz-*-flatpak-x86_64.flatpak'
 # NDI's libndi loads FFmpeg 7.1 builds named libavcodec-ndi.so.61 / libavutil-ndi.so.59.
@@ -60,18 +62,19 @@ NDI_LIBS="$TARGET_HOME/.var/app/$OBS_ID/data/ndi-libs"
 PTZ_STAMP=/var/lib/church-obs-ptz-bundle.sha256
 
 # What is missing? Each piece is installed when it is missing; --install also updates what is there.
-NEED_APT=0 NEED_OBS=0 NEED_DISTROAV=0 NEED_PTZ=0 NEED_NDI=0
+NEED_APT=0 NEED_OBS=0 NEED_DISTROAV=0 NEED_DSK=0 NEED_PTZ=0 NEED_NDI=0
 for cmd in flatpak curl pactl ffmpeg; do command -v "$cmd" >/dev/null || NEED_APT=1; done
 python3 -c 'import PIL' 2>/dev/null || NEED_APT=1
 modinfo v4l2loopback >/dev/null 2>&1 || NEED_APT=1   # OBS Virtual Camera
 if command -v flatpak >/dev/null; then
   flatpak info --system "$OBS_ID" >/dev/null 2>&1 || NEED_OBS=1
   flatpak info --system "$OBS_ID.Plugin.DistroAV" >/dev/null 2>&1 || NEED_DISTROAV=1
+  flatpak info --system "$DSK_ID" >/dev/null 2>&1 || NEED_DSK=1
   flatpak list --system --columns=application 2>/dev/null | grep -qi 'ptz' || NEED_PTZ=1
   flatpak info --system "org.freedesktop.Platform//$FFMPEG_RUNTIME_BRANCH" >/dev/null 2>&1 || NEED_NDI=1
   flatpak info --system "org.freedesktop.Platform.codecs-extra//$CODECS_BRANCH" >/dev/null 2>&1 || NEED_NDI=1
 else
-  NEED_OBS=1 NEED_DISTROAV=1 NEED_PTZ=1 NEED_NDI=1
+  NEED_OBS=1 NEED_DISTROAV=1 NEED_DSK=1 NEED_PTZ=1 NEED_NDI=1
 fi
 for lib in libavcodec-ndi.so.61 libavutil-ndi.so.59 libswresample.so.5 libvpx.so.11; do
   [ -e "$NDI_LIBS/$lib" ] || NEED_NDI=1
@@ -83,6 +86,7 @@ status() { if [ "$2" = 1 ]; then echo "  $1: MISSING"; else echo "  $1: installe
 status "system tools (flatpak, curl, pactl, ffmpeg, python3-pil, v4l2loopback)" "$NEED_APT"
 status "OBS Studio" "$NEED_OBS"
 status "DistroAV (NDI)" "$NEED_DISTROAV"
+status "Downstream Keyer" "$NEED_DSK"
 status "obs-ptz (PTZ Controls)" "$NEED_PTZ"
 status "NDI HX decoder libraries" "$NEED_NDI"
 if [ "$INSTALL" = yes ]; then echo "  --install given: installing and updating everything"; fi
@@ -92,7 +96,7 @@ if want "$NEED_APT"; then
   apt-get update -y
   apt-get install -y flatpak python3-pil curl pulseaudio-utils ffmpeg v4l2loopback-dkms
 fi
-if [ "$INSTALL" = yes ] || [ "$NEED_OBS$NEED_DISTROAV$NEED_PTZ$NEED_NDI" != 0000 ]; then
+if [ "$INSTALL" = yes ] || [ "$NEED_OBS$NEED_DISTROAV$NEED_DSK$NEED_PTZ$NEED_NDI" != 00000 ]; then
   flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 fi
 
@@ -104,6 +108,11 @@ fi
 if want "$NEED_DISTROAV"; then
   echo "==> [2/6] Installing DistroAV (NDI)"
   flatpak install --system -y --or-update flathub "$OBS_ID.Plugin.DistroAV"
+fi
+if want "$NEED_DSK"; then
+  echo "==> [2/6] Installing Downstream Keyer"
+  # Adds the Downstream Keyer dock (Docks menu in OBS): scenes added there stay on top of every scene.
+  flatpak install --system -y --or-update flathub "$DSK_ID"
 fi
 
 if flatpak info --system "$OBS_ID" >/dev/null 2>&1; then

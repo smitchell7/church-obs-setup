@@ -3,33 +3,6 @@
     "sources": [
         {
             "prev_ver": 553648128,
-            "name": "Color",
-            "uuid": "433b0ea0-6b24-49d9-a41f-56794ded3674",
-            "id": "color_source",
-            "versioned_id": "color_source_v3",
-            "settings": {
-                "color": 4278255360
-            },
-            "mixers": 0,
-            "sync": 0,
-            "flags": 0,
-            "volume": 1.0,
-            "balance": 0.5,
-            "enabled": true,
-            "muted": false,
-            "push-to-mute": false,
-            "push-to-mute-delay": 0,
-            "push-to-talk": false,
-            "push-to-talk-delay": 0,
-            "hotkeys": {},
-            "deinterlace_mode": 0,
-            "deinterlace_field_order": 0,
-            "monitoring_type": 0,
-            "monitoring_enabled": false,
-            "private_settings": {}
-        },
-        {
-            "prev_ver": 553648128,
             "name": "Image 2",
             "uuid": "bd58ac99-b236-4fe3-a5be-8e41d743d8ab",
             "id": "image_source",
@@ -936,61 +909,6 @@
                 "custom_size": false,
                 "id_counter": 5,
                 "items": [
-                    {
-                        "name": "Color",
-                        "source_uuid": "433b0ea0-6b24-49d9-a41f-56794ded3674",
-                        "visible": true,
-                        "locked": false,
-                        "rot": 0.0,
-                        "scale_ref": {
-                            "x": 1920.0,
-                            "y": 1080.0
-                        },
-                        "align": 5,
-                        "bounds_type": 0,
-                        "bounds_align": 0,
-                        "bounds_crop": false,
-                        "crop_left": 0,
-                        "crop_top": 0,
-                        "crop_right": 0,
-                        "crop_bottom": 0,
-                        "id": 3,
-                        "group_item_backup": false,
-                        "pos": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "pos_rel": {
-                            "x": -1.7777777910232544,
-                            "y": -1.0
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0
-                        },
-                        "scale_rel": {
-                            "x": 1.0,
-                            "y": 1.0
-                        },
-                        "bounds": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "bounds_rel": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "scale_filter": "disable",
-                        "blend_method": "default",
-                        "blend_type": "normal",
-                        "show_transition": {
-                            "duration": 300
-                        },
-                        "hide_transition": {
-                            "duration": 300
-                        },
-                        "private_settings": {}
-                    },
                     {
                         "name": "Camera",
                         "source_uuid": "8d29ab20-b88f-4336-8b5d-6918b9cc64e4",
@@ -3551,8 +3469,8 @@
             "name": "Sacrament"
         }
     ],
-    "current_scene": "Sacrament",
-    "current_program_scene": "Sacrament",
+    "current_scene": "Full Room - p3",
+    "current_program_scene": "Full Room - p3",
     "canvases": [],
     "current_transition": "Fade",
     "transition_duration": 300,
@@ -3603,30 +3521,6 @@
             "provider": "mssapi",
             "source": ""
         },
-        "downstream_keyers": [
-            {
-                "name": "DSK 1",
-                "transition": "",
-                "transition_duration": 300,
-                "show_transition": "",
-                "show_transition_duration": 300,
-                "hide_transition": "Fade",
-                "hide_transition_duration": 300,
-                "hide_after": 10000,
-                "tie": false,
-                "scenes": [
-                    {
-                        "name": "Lower Thirds - Speakers"
-                    }
-                ],
-                "scene": "",
-                "null_hotkey": [],
-                "enable_tie_hotkey": [],
-                "disable_tie_hotkey": [],
-                "exclude_scenes": []
-            }
-        ],
-        "downstream_keyers_channel": 7,
         "output-timer": {
             "streamTimerHours": 0,
             "streamTimerMinutes": 0,
