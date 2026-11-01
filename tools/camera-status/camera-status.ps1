@@ -1,19 +1,23 @@
-# Ask each PTZ camera whether it is powered on (Windows twin of camera-status.py).
+# Ask each PTZ camera whether it is powered on, then offer to turn them all on or put them in standby
+# (Windows twin of camera-status.py).
 #
 # Sends each camera the VISCA power inquiry (81 09 04 00 FF) over TCP and prints ON or STANDBY. The
-# cameras are the single or dual set in cameras.json, next to this script, or the ones given with
-# -CameraHost. OBS and its scene collections are not used. With -Toggle, each camera in standby is
-# turned on and each one that is on is put in standby.
+# cameras are the ones in cameras.json, next to this script, or the ones given with -CameraHost.
+# OBS and its scene collections are not used. When only the first camera (192.168.111.245)
+# answers, the church has one camera: it is shown as "PTZ Camera". Otherwise each camera that
+# answers is shown by its name, PTZ Left and PTZ Right, and each one that does not as "Error: PTZ
+# Left not found". A menu then asks whether to change nothing, set every camera on, or set every
+# camera to standby; only the cameras found are changed. -Set On or -Set Standby does that without
+# the menu. With no answer to read (input that has run out), the menu changes nothing.
 #
-# Exit status: 0 when every camera answered, 1 when any could not be reached or gave no answer.
+# Exit status: 0 when every camera answered (or the one camera of a single-camera church did), 1
+# when any was not found or gave no answer.
 param(
-    [Parameter(Position = 0)]
-    [ValidateSet('single', 'dual', 'single-camera', 'dual-camera')][string]$Setup,
     # HOST or HOST:PORT; more than one can be given, separated by commas
     [string[]]$CameraHost,
     [string]$Cameras,
     [double]$Timeout = 3,
-    [switch]$Toggle
+    [ValidateSet('On', 'Standby')][string]$Set
 )
 $ErrorActionPreference = 'Stop'
 if (-not $Cameras) { $Cameras = Join-Path $PSScriptRoot 'cameras.json' }
@@ -21,15 +25,20 @@ if (-not $Cameras) { $Cameras = Join-Path $PSScriptRoot 'cameras.json' }
 $DefaultPort = 5678
 $PowerInq = [byte[]](0x81, 0x09, 0x04, 0x00, 0xFF)
 $PowerStates = @{ 2 = 'ON'; 3 = 'STANDBY'; 4 = 'POWER ERROR' }
-$PowerSet = @{  # with -Toggle: the command for each state, which switches to the other one
-    3 = [byte[]](0x81, 0x01, 0x04, 0x00, 0x02, 0xFF)  # in standby: power on
-    2 = [byte[]](0x81, 0x01, 0x04, 0x00, 0x03, 0xFF)  # on: standby
+$On = 2; $Standby = 3
+$PowerSet = @{  # the command that puts the camera in each state
+    $On = [byte[]](0x81, 0x01, 0x04, 0x00, 0x02, 0xFF)
+    $Standby = [byte[]](0x81, 0x01, 0x04, 0x00, 0x03, 0xFF)
 }
+$Actions = @{ $On = 'turned on'; $Standby = 'put in standby' }
+$Targets = @{ 'On' = $On; 'Standby' = $Standby }
+$Menu = @(@('No change', ''), @('Set on', 'On'), @('Set standby', 'Standby'))
+$SingleName = 'PTZ Camera'  # the camera's name when it is the only one that answers
 
-# Name, host and port of each camera of the single or dual set in cameras.json
-function Get-Cameras($setupName, $path) {
+# Name, host and port of each camera in cameras.json
+function Get-Cameras($path) {
     $data = [IO.File]::ReadAllText($path, [Text.Encoding]::UTF8) | ConvertFrom-Json
-    foreach ($c in @($data.$setupName)) {
+    foreach ($c in @($data)) {
         $port = if ($c.port) { [int]$c.port } else { $DefaultPort }
         $name = if ($c.name) { $c.name } else { $c.host }
         [pscustomobject]@{ Source = $name; Host = $c.host; Port = $port }
@@ -59,9 +68,9 @@ function Read-Packet($stream) {
     return , $p
 }
 
-# The camera's answer to the power inquiry, and with -Toggle, what was done about it: a camera in
-# standby is turned on, and one that is on is put in standby.
-function Get-PowerState($cameraHost, $port) {
+# The camera's answer to the power inquiry, and what was done about it. $change is '' to only ask,
+# or 'On' or 'Standby' to put the camera in that state whatever it was in.
+function Get-PowerState($cameraHost, $port, $change) {
     $ms = [int]($Timeout * 1000)
     $client = New-Object Net.Sockets.TcpClient
     try {
@@ -73,10 +82,12 @@ function Get-PowerState($cameraHost, $port) {
         $code = [int]$p[2]
         $state = if ($PowerStates.ContainsKey($code)) { $PowerStates[$code] }
                  else { 'UNKNOWN (' + (($p | ForEach-Object { $_.ToString('x2') }) -join ' ') + ')' }
-        if (-not $Toggle -or -not $PowerSet.ContainsKey($code)) { return $state }
-        $cmd = $PowerSet[$code]
+        if (-not $change) { return $state }
+        $target = $Targets[$change]
+        $cmd = $PowerSet[$target]
         $stream.Write($cmd, 0, $cmd.Length)
-        $action = if ($code -eq 3) { 'turned on' } else { 'put in standby' }
+        $action = $Actions[$target]
+        if ($code -eq $target) { $action += ' (it already was)' }
         # y0 4z FF says the camera took the command, y0 5z FF that it has carried it out. A camera
         # can take a while to power up, so a command it took but has not finished still counts.
         $accepted = $false
@@ -95,23 +106,93 @@ function Get-PowerState($cameraHost, $port) {
     }
 }
 
+# What each camera said, and whether it answered
+function Get-Results($found, $change) {
+    foreach ($cam in $found) {
+        try {
+            $state = Get-PowerState $cam.Host $cam.Port $change
+            [pscustomobject]@{ Camera = $cam; State = $state; Answered = $true }
+        } catch {
+            $msg = if ($_.Exception.InnerException) { $_.Exception.InnerException.Message } else { $_.Exception.Message }
+            [pscustomobject]@{ Camera = $cam; State = "NO ANSWER ($msg)"; Answered = $false }
+        }
+    }
+}
+
+function Show-Results($results) {
+    foreach ($r in $results) {
+        Write-Host ("  {0} ({1}:{2}): {3}" -f $r.Camera.Source, $r.Camera.Host, $r.Camera.Port, $r.State)
+    }
+}
+
+# Print each camera's power state, and what was done about it; $true if every camera answered
+function Show-Report($found, $change) {
+    $results = @(Get-Results $found $change)
+    Show-Results $results
+    return -not ($results | Where-Object { -not $_.Answered })
+}
+
+# A church with one camera has it at the first address: when that is the only one to answer, it is
+# named PTZ Camera. Any other camera that is the only one to answer keeps its name, PTZ Right, and
+# the first one is reported missing.
+function Select-Single($results) {
+    $answered = @($results | Where-Object Answered)
+    if ($answered.Count -ne 1 -or $answered[0] -ne $results[0]) { return $null }
+    $cam = $answered[0].Camera
+    $single = [pscustomobject]@{ Source = $SingleName; Host = $cam.Host; Port = $cam.Port }
+    return [pscustomobject]@{ Camera = $single; State = $answered[0].State; Answered = $true }
+}
+
+function Show-Missing($missing) {
+    foreach ($cam in $missing) { Write-Host "  Error: $($cam.Source) not found" }
+}
+
+# The change picked from the menu: '' for no change, 'On', or 'Standby'
+function Read-Menu {
+    Write-Host ''
+    for ($i = 0; $i -lt $Menu.Count; $i++) { Write-Host ("  {0}. {1}" -f ($i + 1), $Menu[$i][0]) }
+    while ($true) {
+        Write-Host -NoNewline "Choose 1-$($Menu.Count): "
+        $choice = [Console]::In.ReadLine()
+        if ($null -eq $choice) { Write-Host ''; return '' }
+        $n = 0
+        if ([int]::TryParse($choice.Trim(), [ref]$n) -and $n -ge 1 -and $n -le $Menu.Count) { return $Menu[$n - 1][1] }
+        Write-Host "Enter a number from 1 to $($Menu.Count)."
+    }
+}
+
 if ($CameraHost) {
     $found = @($CameraHost | ForEach-Object { Get-HostCamera $_ })
-} elseif ($Setup) {
-    $found = @(Get-Cameras ($Setup -replace '-camera$', '') $Cameras)
-    Write-Host "Cameras from $Cameras"
 } else {
-    Write-Host 'Say which cameras to ask: single, dual, or -CameraHost.'
-    exit 2
+    $found = @(Get-Cameras $Cameras)
+    Write-Host "Cameras from $Cameras"
 }
-$ok = $true
-foreach ($cam in $found) {
-    try {
-        $state = Get-PowerState $cam.Host $cam.Port
-    } catch {
-        $msg = if ($_.Exception.InnerException) { $_.Exception.InnerException.Message } else { $_.Exception.Message }
-        $state = "NO ANSWER ($msg)"; $ok = $false
-    }
-    Write-Host ("  {0} ({1}:{2}): {3}" -f $cam.Source, $cam.Host, $cam.Port, $state)
+
+$results = @(Get-Results $found '')
+$single = Select-Single $results
+if ($single) {
+    $answered = @($single); $missing = @()
+} else {
+    $answered = @($results | Where-Object Answered)
+    $missing = @($results | Where-Object { -not $_.Answered } | ForEach-Object { $_.Camera })
 }
-if ($ok) { exit 0 } else { exit 1 }
+if ($answered.Count -eq 0) {  # no camera to show or change
+    Show-Results $results
+    exit 1
+}
+$cams = @($answered | ForEach-Object { $_.Camera })
+if ($Set) {
+    $ok = Show-Report $cams $Set
+    Show-Missing $missing
+    if ($ok -and $missing.Count -eq 0) { exit 0 } else { exit 1 }
+}
+Show-Results $answered
+Show-Missing $missing
+$change = Read-Menu
+if (-not $change) {
+    if ($missing.Count -eq 0) { exit 0 } else { exit 1 }
+}
+Write-Host ''
+$ok = Show-Report $cams $change
+Show-Missing $missing
+if ($ok -and $missing.Count -eq 0) { exit 0 } else { exit 1 }
