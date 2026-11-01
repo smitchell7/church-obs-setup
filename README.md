@@ -137,3 +137,6 @@ OBS has no notch filter, so `audio/hum-notch.conf` is a PipeWire filter-chain: f
 the virtual microphone `hum_notch` ("USB Audio (hum filtered)"). Run with `NOTCH=0` to turn it off.
 A notch only hides the hum; a ground loop is still best fixed at the source (try a USB isolator, or a
 ground-lift/isolation transformer on the audio line, and unplug the ethernet briefly to test).
+
+No restart needed (safe during a stream): run `tools/install-hum-notch.sh [mic-name]` as the normal user. It installs the
+drop-in for future logins and loads the filter now; then set OBS's "USB Audio" device to "USB Audio (hum filtered)".
