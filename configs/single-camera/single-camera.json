@@ -3519,30 +3519,6 @@
             "provider": "mssapi",
             "source": ""
         },
-        "downstream_keyers": [
-            {
-                "name": "DSK 1",
-                "transition": "",
-                "transition_duration": 300,
-                "show_transition": "",
-                "show_transition_duration": 300,
-                "hide_transition": "Fade",
-                "hide_transition_duration": 300,
-                "hide_after": 10000,
-                "tie": false,
-                "scenes": [
-                    {
-                        "name": "Lower Thirds - Speakers"
-                    }
-                ],
-                "scene": "",
-                "null_hotkey": [],
-                "enable_tie_hotkey": [],
-                "disable_tie_hotkey": [],
-                "exclude_scenes": []
-            }
-        ],
-        "downstream_keyers_channel": 7,
         "output-timer": {
             "streamTimerHours": 0,
             "streamTimerMinutes": 0,
