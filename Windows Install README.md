@@ -10,35 +10,43 @@
 # First Time Windows Install
 
   1. Open **PowerShell as administrator** (Start, type `powershell`, right-click > Run as administrator)
-  2A. Single Camera Configuration
+  2. Run one of the following depending on desired camera configuration
+* **Single Camera Configuration**
    ```powershell
    cd $env:TEMP
    irm https://raw.githubusercontent.com/smitchell7/church-obs-setup/windows/setup-obs-windows.ps1 -OutFile setup-obs-windows.ps1
    powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1 -Config single-camera
   ```
-  2B. Dual Camera Configuration
+* **Dual Camera Configuration**
    ```powershell
    cd $env:TEMP
-   irm https://raw.githubusercontent.com/smitchell7/church-obs-setup/windows/setup-obs-windows.ps1 -OutFile setup-obs-windows.ps1
+   irm https://raw.githubusercontent.com/smitchell7/church-obs-setup/main/setup-obs-windows.ps1 -OutFile setup-obs-windows.ps1
    powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1 -Config dual-camera
    ```
-# Updating to the Latest Configurations
-Single Camera Configuration
+
+* **Stake Conference Camera Configuration**
+   ```powershell
+   cd $env:TEMP
+   irm https://raw.githubusercontent.com/smitchell7/church-obs-setup/main/setup-obs-windows.ps1 -OutFile setup-obs-windows.ps1
+   powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1 -Config Stake-Conference
+   ```
+# Updating configuraiton on Existing Installation
+* **Single Camera Configuration**
    ```powershell
   cd c:\church-obs-setup
   git pull
   powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1 -Config single-camera
    ```
-Dual Camera Configuration
+* **Dual Camera Configuration**
    ```powershell
   cd c:\church-obs-setup
   git pull
   powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1 -Config dual-camera
    ```
-Stake Conference Camera Configuration
+* **Stake Conference Camera Configuration**
    ```powershell
   cd c:\church-obs-setup
   git pull
   powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1 -Config stake-conference
    ```
-If you need to add the scene collection you do not currently have run the update script for the scene collection you want to add to your computer
+If you need to add the scene collection you do not currently have, run the update script for the scene collection you want to add to your computer
