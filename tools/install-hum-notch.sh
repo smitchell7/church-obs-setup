@@ -16,11 +16,11 @@ if [ -z "$MIC" ]; then   # same choice as setup-obs-flatpak.sh: Sound Blaster, e
 fi
 [ -n "$MIC" ] || { echo "No microphone found; pass its name as an argument." >&2; exit 1; }
 pactl list short sources | cut -f2 | grep -qx "$MIC" || { echo "No such source: $MIC" >&2; exit 1; }
-if pactl list short sources | cut -f2 | grep -qx hum_notch; then echo "hum_notch is already running; nothing to load."; exit 0; fi
 echo "Filtering microphone: $MIC"
 CONF="$HOME/.config/pipewire/pipewire.conf.d/hum-notch.conf"
 mkdir -p "$(dirname "$CONF")"
 sed "s|@AUDIO_DEVICE@|$MIC|g" "$HERE/audio/hum-notch.conf" > "$CONF"
+if pactl list short sources | cut -f2 | grep -qx hum_notch; then echo "hum_notch is already running; drop-in installed, nothing to load now."; exit 0; fi
 # Load now: pw-cli keeps the module only while it runs, so leave it running in the background.
 ARGS=$(python3 -I -c "
 import sys;s=open(sys.argv[1]).read();i=s.index('args = {')+7;j=s.rindex('}\n    }\n]');print(' '.join((s[i:j].strip()+'\n}').split()))" "$CONF")
