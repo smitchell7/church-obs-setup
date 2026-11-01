@@ -134,6 +134,20 @@ def present(found, results):
     return answered, missing
 
 
+def show_none_found(found):
+    """What to check when no camera answered. A one-camera building has its camera at the first
+    address; a two-camera building has the left camera there and the right one at the second."""
+    if len(found) < 2:
+        for name, host, _ in found:
+            print("  Error: PTZ camera not found. Check that this computer is connected to the church network, check "
+                  "that the PTZ camera is plugged in, connected to the network and at its address (%s)" % host)
+        return
+    print("  Error: PTZ cameras not found. Check that this computer is connected to the church network, check that "
+          "all PTZ cameras are plugged in, connected to the network and at the correct addresses. For a one camera building the address is (%s) and for "
+          "two camera buildings the addresses are (%s) for the left camera and (%s) for the right camera"
+          % (found[0][1], found[0][1], found[1][1]))
+
+
 def show_missing(missing):
     for name, host, _ in missing:
         print("  Error: %s not found. Check that %s is plugged in, connected to the network and at its "
@@ -178,6 +192,7 @@ def main():
     if not answered:  # no camera to show or change
         for camera, (state, _) in zip(found, results):
             show(camera, state)
+        show_none_found(found)
         return 1
     cams = [cam for cam, _ in answered]
     if args.set:

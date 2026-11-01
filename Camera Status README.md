@@ -17,12 +17,12 @@ there (see **One camera or two** below).
 
 ## Camera addresses
 
-The camera addresses are in `tools/camera-status/cameras.json`, which both scripts read:
+The camera addresses are in `tools/camera-status/cameras.json`, which both scripts read. It lists:
 
-    [
-        { "name": "PTZ Left", "host": "192.168.111.245", "port": 5678 },
-        { "name": "PTZ Right", "host": "192.168.111.246", "port": 5678 }
-    ]
+| name      | host            | port |
+|-----------|-----------------|------|
+| PTZ Left  | 192.168.111.245 | 5678 |
+| PTZ Right | 192.168.111.246 | 5678 |
 
 - `name` is the label the script prints for the camera.
 - `host` is the camera's IP address, and `port` is its VISCA TCP port (5678 unless it was changed on the
@@ -70,31 +70,32 @@ cd C:\church-obs-setup
 powershell -ExecutionPolicy Bypass -File .\tools\camera-status\camera-status.ps1
 ```
 
-## One camera or two
+## Status Menu
 
 The script asks both cameras in `cameras.json`, then shows what it found:
 
 - **Both cameras answer** (Expected result in the Independence Building): they are shown as **PTZ Left** and **PTZ Right**.
 
-      PTZ Left (192.168.111.245:5678): ON
-      PTZ Right (192.168.111.246:5678): STANDBY
+  `PTZ Left (192.168.111.245:5678): ON`\
+  `PTZ Right (192.168.111.246:5678): STANDBY`
 
 - **Only 192.168.111.245 answers** (Expected Result in Alkire and Quail Buildings): it is shown as **PTZ Camera**, and the second camera is not mentioned. 
     If you are in the independence building and this is the result you receive, check that PTZ Right is Plugged in, connected to the network and at its address (192.168.111.246)
 
-      PTZ Camera (192.168.111.245:5678): ON
+  `PTZ Camera (192.168.111.245:5678): ON`
 
 - **Only 192.168.111.246 answers**: it is shown as **PTZ Right**, with an error that the left camera is
   missing and what to check.
 
-      PTZ Right (192.168.111.246:5678): ON
-      Error: PTZ Left not found. Check that PTZ Left is plugged in, connected to the network and at its address (192.168.111.245)
+  `PTZ Right (192.168.111.246:5678): ON`\
+  `Error: PTZ Left not found. Check that PTZ Left is plugged in, connected to the network and at its address (192.168.111.245)`
 
-- **No camera answers**: each is shown as **NO ANSWER**, with the reason, and the script ends without the
-  menu.
+- **No camera answers**: each is shown as **NO ANSWER**, with the reason, followed by an error that says
+  what to check and where each camera should be. The script ends without the menu.
 
-      PTZ Left (192.168.111.245:5678): NO ANSWER (timed out connecting)
-      PTZ Right (192.168.111.246:5678): NO ANSWER (timed out connecting)
+  `PTZ Left (192.168.111.245:5678): NO ANSWER (timed out connecting)`\
+  `PTZ Right (192.168.111.246:5678): NO ANSWER (timed out connecting)`\
+  `Error: PTZ cameras not found. Check that this computer is connected to the church network, check that all PTZ cameras are plugged in, connected to the network and at the correct addresses. For a one camera building the address is (192.168.111.245) and for two camera buildings the addresses are (192.168.111.245) for the left camera and (192.168.111.246) for the right camera`
 
 
 ## Status Setting Menu
@@ -102,13 +103,13 @@ The script asks both cameras in `cameras.json`, then shows what it found:
 After it shows each camera's power state, the script asks what to do:
 This will change the state for all cameras reported by the script to the selected status
 
-      PTZ Left (192.168.111.245:5678): ON
-      PTZ Right (192.168.111.246:5678): STANDBY
+`PTZ Left (192.168.111.245:5678): ON`\
+`PTZ Right (192.168.111.246:5678): STANDBY`
 
-      1. No change
-      2. Set on
-      3. Set standby
-    Choose 1-3:
+`1. No change`\
+`2. Set on`\
+`3. Set standby`\
+`Choose 1-3:`
 
 Type a number and press Enter:
 
@@ -117,11 +118,11 @@ Type a number and press Enter:
 - **3. Set standby**: puts **every** camera that was found in standby, whatever state each one is in.
 
 
-After 2 or 3, the script shows the power state each camera had **before**, and what was done. A camera
+if option 2 or 3 are selected, the script returns the power state each camera had **before**, and what was done. A camera
 that was already in that state still gets the command, and shows **(it already was)**:
 
-      PTZ Left (192.168.111.245:5678): ON, turned on (it already was)
-      PTZ Right (192.168.111.246:5678): STANDBY, turned on
+`PTZ Left (192.168.111.245:5678): ON, turned on (it already was)`\
+`PTZ Right (192.168.111.246:5678): STANDBY, turned on`
 
 **still finishing** after the action means the camera accepted the command but was still powering up or
 down when the script stopped waiting. That is normal, since a camera can take several seconds to turn on.

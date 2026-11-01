@@ -143,6 +143,20 @@ function Select-Single($results) {
     return [pscustomobject]@{ Camera = $single; State = $answered[0].State; Answered = $true }
 }
 
+# What to check when no camera answered. A one-camera building has its camera at the first address;
+# a two-camera building has the left camera there and the right one at the second.
+function Show-NoneFound($found) {
+    if ($found.Count -lt 2) {
+        foreach ($cam in $found) {
+            Write-Host ("  Error: PTZ camera not found. Check that this computer is connected to the church network, check that the PTZ camera is plugged in, connected to the network and at its address ({0})" -f $cam.Host)
+        }
+        return
+    }
+    $msg = '  Error: PTZ cameras not found. Check that this computer is connected to the church network, check that all PTZ cameras are plugged in, connected to the network and at the correct addresses. ' +
+        'For a one camera building the address is ({0}) and for two camera buildings the addresses are ({0}) for the left camera and ({1}) for the right camera'
+    Write-Host ($msg -f $found[0].Host, $found[1].Host)
+}
+
 function Show-Missing($missing) {
     foreach ($cam in $missing) {
         Write-Host ("  Error: {0} not found. Check that {0} is plugged in, connected to the network and at its address ({1})" -f $cam.Source, $cam.Host)
@@ -180,6 +194,7 @@ if ($single) {
 }
 if ($answered.Count -eq 0) {  # no camera to show or change
     Show-Results $results
+    Show-NoneFound $found
     exit 1
 }
 $cams = @($answered | ForEach-Object { $_.Camera })
