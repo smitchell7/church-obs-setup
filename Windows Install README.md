@@ -34,19 +34,16 @@
 * **Single Camera Configuration**
    ```powershell
   cd c:\church-obs-setup
-  git pull
   powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1 -Config single-camera
    ```
 * **Dual Camera Configuration**
    ```powershell
   cd c:\church-obs-setup
-  git pull
   powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1 -Config dual-camera
    ```
 * **Stake Conference Camera Configuration**
    ```powershell
   cd c:\church-obs-setup
-  git pull
   powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1 -Config stake-conference
    ```
 If you need to add the scene collection you do not currently have, run the update script for the scene collection you want to add to your computer
