@@ -129,3 +129,11 @@ The installer creates one account, `broadcast` (auto-login, with sudo), and join
 when `user-data` is rendered.
 
 Never commit `secrets.env` or `user-data`.
+
+## Hum filter (60/120/180 Hz notch)
+
+OBS has no notch filter, so `audio/hum-notch.conf` is a PipeWire filter-chain: three narrow notches (Q 30) at
+60, 120 and 180 Hz on the USB microphone. The setup script installs it and points OBS's "USB Audio" source at
+the virtual microphone `hum_notch` ("USB Audio (hum filtered)"). Run with `NOTCH=0` to turn it off.
+A notch only hides the hum; a ground loop is still best fixed at the source (try a USB isolator, or a
+ground-lift/isolation transformer on the audio line, and unplug the ethernet briefly to test).
