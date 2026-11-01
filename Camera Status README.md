@@ -35,44 +35,52 @@ file, and OBS's address is not read by the scripts, so change both when a camera
 To ask one camera without editing the file, give its address with `--host` (Windows: `-CameraHost`). See
 **Options** below.
 
-## Install
+## Script Installation
 
 The scripts come with `church-obs-setup`, so updating the existing folder installs them. Nothing else is
 needed: Ubuntu already has Python 3, and Windows already has PowerShell.
 
 Ubuntu:
 
-    cd ~/church-obs-setup
-    sudo git pull
+```bash
+cd ~/church-obs-setup
+sudo git pull
+```
 
 Windows (PowerShell):
 
-    cd C:\church-obs-setup
-    git pull
+```powershell
+cd C:\church-obs-setup
+git pull
+```
 
-## Run
+## Run Status Script
 
 Ubuntu:
 
-    cd ~/church-obs-setup
-    python3 tools/camera-status/camera-status.py
+```bash
+cd ~/church-obs-setup
+python3 tools/camera-status/camera-status.py
+```
 
 Windows:
 
-    cd C:\church-obs-setup
-    powershell -ExecutionPolicy Bypass -File .\tools\camera-status\camera-status.ps1
+```powershell
+cd C:\church-obs-setup
+powershell -ExecutionPolicy Bypass -File .\tools\camera-status\camera-status.ps1
+```
 
 ## One camera or two
 
 The script asks both cameras in `cameras.json`, then shows what it found:
 
-- **Both cameras answer** (a dual-camera church): they are shown as **PTZ Left** and **PTZ Right**.
+- **Both cameras answer** (Expected result in the Independence Building): they are shown as **PTZ Left** and **PTZ Right**.
 
       PTZ Left (192.168.111.245:5678): ON
       PTZ Right (192.168.111.246:5678): STANDBY
 
-- **Only 192.168.111.245 answers** (a single-camera church): it is shown as **PTZ Camera**, and the second
-  camera is not mentioned.
+- **Only 192.168.111.245 answers** (Expected Result in Alkire and Quail Buildings): it is shown as **PTZ Camera**, and the second camera is not mentioned. 
+    If you are in the independence building and this is the result you receive, check that PTZ Right is Plugged in, connected to the network and at its address (192.168.111.246)
 
       PTZ Camera (192.168.111.245:5678): ON
 
@@ -88,12 +96,11 @@ The script asks both cameras in `cameras.json`, then shows what it found:
       PTZ Left (192.168.111.245:5678): NO ANSWER (timed out connecting)
       PTZ Right (192.168.111.246:5678): NO ANSWER (timed out connecting)
 
-At a dual-camera church where PTZ Right is off the network, only PTZ Left answers, so it is shown as
-**PTZ Camera**. If a dual-camera church sees **PTZ Camera**, check PTZ Right.
 
-## The menu
+## Status Setting Menu
 
 After it shows each camera's power state, the script asks what to do:
+This will change the state for all cameras reported by the script to the selected status
 
       PTZ Left (192.168.111.245:5678): ON
       PTZ Right (192.168.111.246:5678): STANDBY
@@ -109,8 +116,6 @@ Type a number and press Enter:
 - **2. Set on**: turns **every** camera that was found on, whatever state each one is in.
 - **3. Set standby**: puts **every** camera that was found in standby, whatever state each one is in.
 
-For dual cameras, 2 or 3 gets both cameras to the same state. Any other answer asks again. A camera that was
-not found (such as **Error: PTZ Left not found**) is not changed.
 
 After 2 or 3, the script shows the power state each camera had **before**, and what was done. A camera
 that was already in that state still gets the command, and shows **(it already was)**:
@@ -124,21 +129,37 @@ Run the script again to see the new state.
 
 ## Skip the menu (set)
 
-To turn the cameras on or put them in standby without the menu, for example from a desktop shortcut, add
+To turn the cameras on or put them in standby without the menu, add
 `--set on` or `--set standby` (Ubuntu), or `-Set On` or `-Set Standby` (Windows). It does the same as
 choosing 2 or 3 in the menu.
 
-Ubuntu, all cameras on, or all in standby:
+Ubuntu, all cameras on:
 
-    cd ~/church-obs-setup
-    python3 tools/camera-status/camera-status.py --set on
-    python3 tools/camera-status/camera-status.py --set standby
+```bash
+cd ~/church-obs-setup
+python3 tools/camera-status/camera-status.py --set on
+```
 
-Windows, all cameras on, or all in standby:
+Ubuntu, all cameras in standby:
 
-    cd C:\church-obs-setup
-    powershell -ExecutionPolicy Bypass -File .\tools\camera-status\camera-status.ps1 -Set On
-    powershell -ExecutionPolicy Bypass -File .\tools\camera-status\camera-status.ps1 -Set Standby
+```bash
+cd ~/church-obs-setup
+python3 tools/camera-status/camera-status.py --set standby
+```
+
+Windows, all cameras on:
+
+```powershell
+cd C:\church-obs-setup
+powershell -ExecutionPolicy Bypass -File .\tools\camera-status\camera-status.ps1 -Set On
+```
+
+Windows, all cameras in standby:
+
+```powershell
+cd C:\church-obs-setup
+powershell -ExecutionPolicy Bypass -File .\tools\camera-status\camera-status.ps1 -Set Standby
+```
 
 The result looks like the one after choosing 2 or 3 in the menu.
 
@@ -159,8 +180,13 @@ The result looks like the one after choosing 2 or 3 in the menu.
   `cameras.json`. Add `:PORT` if the port is not 5678. To ask more than one, repeat `--host` on Ubuntu, or
   separate the addresses with commas on Windows:
 
-      python3 tools/camera-status/camera-status.py --host 192.168.111.245 --host 192.168.111.246
-      powershell -ExecutionPolicy Bypass -File .\tools\camera-status\camera-status.ps1 -CameraHost 192.168.111.245,192.168.111.246
+  ```bash
+  python3 tools/camera-status/camera-status.py --host 192.168.111.245 --host 192.168.111.246
+  ```
+
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File .\tools\camera-status\camera-status.ps1 -CameraHost 192.168.111.245,192.168.111.246
+  ```
 
 - `--cameras FILE` (Windows: `-Cameras FILE`) reads the camera addresses from a different file laid out like
   `cameras.json`.
