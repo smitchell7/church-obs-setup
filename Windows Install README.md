@@ -5,6 +5,7 @@
   Use the single camera setup code to install the single camera Scene Collection and the dual camera code to install the dual camera configuration
   The single camera Scene Collection is what is wanted for the Alkire and Quail Buildings
   The Dual Camera Scene Collection is what is wanted for the Independence Building (Stake Center)
+  The Stake Conference Scene Collection is intended only for use for meetings where an additional computer will be generating and sending overlay graphics to OBS over NDI. It is based on the Dual Camera Scene Collection
 
 # First Time Windows Install
 
@@ -33,5 +34,11 @@ Dual Camera Configuration
   cd c:\church-obs-setup
   git pull
   powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1 -Config dual-camera
+   ```
+Stake Conference Camera Configuration
+   ```powershell
+  cd c:\church-obs-setup
+  git pull
+  powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1 -Config stake-conference
    ```
 If you need to add the scene collection you do not currently have run the update script for the scene collection you want to add to your computer
