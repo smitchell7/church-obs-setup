@@ -23,8 +23,10 @@ sed "s|@AUDIO_DEVICE@|$MIC|g" "$HERE/audio/hum-notch.conf" > "$CONF"
 if pactl list short sources | cut -f2 | grep -qx hum_notch; then echo "hum_notch is already running; drop-in installed, nothing to load now."; exit 0; fi
 # Load now: pw-cli keeps the module only while it runs, so leave it running in the background.
 ARGS=$(python3 -I -c "
-import sys;s=open(sys.argv[1]).read();i=s.index('args = {')+7;j=s.rindex('}\n    }\n]');print(' '.join((s[i:j].strip()+'\n}').split()))" "$CONF")
+import sys;import re;s=open(sys.argv[1]).read();i=s.index('args = {')+7;j=s.rindex('}\n    }\n]');a=re.sub(r'#[^\n]*','',s[i:j]);print(' '.join((a.strip()+'\n}').split()))" "$CONF")
 (echo "load-module libpipewire-module-filter-chain $ARGS"; sleep infinity) | setsid nohup pw-cli -m >/dev/null 2>&1 &
 for _ in 1 2 3 4 5 6 7 8 9 10; do pactl list short sources | cut -f2 | grep -qx hum_notch && break; sleep 1; done
 pactl list short sources | cut -f2 | grep -qx hum_notch || { echo "The filter did not start." >&2; exit 1; }
+for _ in 1 2 3 4 5; do pw-link -l | grep -A1 '^hum_notch_in:input_FL' | grep -qF "$MIC:" && break; sleep 1; done
+pw-link -l | grep -A1 '^hum_notch_in:input_FL' | grep -qF "$MIC:" || { echo "The filter started but is not connected to $MIC." >&2; exit 1; }
 echo "Running. In OBS set USB Audio > Properties > Device to 'USB Audio (hum filtered)'."
