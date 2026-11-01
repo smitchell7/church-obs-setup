@@ -79,7 +79,8 @@ HX2/HX3 cameras.
     PulseAudio itself is not needed (the installer adds `pulseaudio-utils` for `pactl`). PipeWire only reads
     these files when it starts, so if the user is logged in the installer restarts PipeWire when they change
     (audio drops for a moment; not during a Zoom call); otherwise they apply after the next login.
-    `tools/set-obs-monitor.py` points OBS's monitoring device at the speaker.
+    `tools/set-obs-monitor.py` points OBS's monitoring device at the speaker and opens OBS in studio mode
+    (OBS remembers the mode on exit, so if someone turns it off it stays off until the installer runs again).
   - **Zoom settings, once per computer** (Zoom keeps these itself, so the installer cannot set them):
     Settings > Audio: **Microphone** "OBS Mic (for Zoom)", picked by name (not "Same as System"); **Speaker** the computer's
     speakers or headphones, never "OBS Monitoring (not for Zoom)", which would send the meeting back into the
@@ -138,6 +139,8 @@ computer always runs the current version. Run it again at any time to update; cl
   input in before running it. `-AudioDevice "part of its name"` picks another;
 - points OBS's audio monitoring at "CABLE Input (VB-Audio Virtual Cable)", so the USB input and the
   sacrament music go to Zoom: in Zoom pick the microphone **CABLE Output (VB-Audio Virtual Cable)**;
+- opens OBS in studio mode (OBS remembers the mode on exit, so if someone turns it off it stays off until the
+  script runs again);
 - adds a firewall rule for NDI, makes the sacrament graphic, and builds the sacrament playlist from
   `audio\sacrament-playlist.txt` (`tools\make-sacrament-playlist.ps1`) in `Documents\sacrament`.
 

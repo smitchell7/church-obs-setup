@@ -396,6 +396,9 @@ if ($cable) {
     Write-Warning 'The virtual cable is not active yet, so OBS monitoring was not pointed at it. Restart Windows and run this again.'
 }
 
+# Open OBS in studio mode. OBS saves this on exit, so it is only the starting state.
+Set-IniValues (Join-Path $ObsDir 'user.ini') 'BasicWindow' @{ PreviewProgramMode = 'true' }
+
 # ---- 7. Sacrament graphic and music playlist -----------------------------------
 Step '[7/7] Sacrament graphic and music playlist'
 $graphic = Join-Path $MusicDir 'sacrament-graphic.png'
