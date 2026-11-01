@@ -1,4 +1,4 @@
-# Camera Status
+# Camera Status Check Script
 
 Checks whether each PTZ camera is powered **ON** or in **STANDBY**. Use it to confirm the cameras turned
 on when OBS opened, or turned off when OBS closed. After showing each camera's state, it offers a menu to
