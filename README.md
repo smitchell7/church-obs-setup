@@ -45,7 +45,9 @@ Options: `--install` (also update what is already installed), `--config=alkire-a
 `TARGET_USER=name` (default: whoever ran sudo), `AUDIO_DEVICE=name` (force the OBS audio input),
 `PTZ_BUNDLE=/path/file.flatpak` (a different obs-ptz build), `DSK_REPO=owner/name` (download Downstream Keyer
 from a different GitHub repo's releases), `DSK_BUNDLE=/path/file.flatpak` (install Downstream Keyer from a local
-file instead).
+file instead), `OBS_X11=1` or `OBS_X11=0` (run OBS through X11/XWayland, or never; without it that happens only when OBS opens on
+the Independence Building collection, because opening an external projector there under Wayland crashed OBS).
+To undo it: `flatpak override --user --reset com.obsproject.Studio`, then run the script again.
 
 `--install` installs OBS Studio, DistroAV (NDI) and the obs-ptz PTZ Controls extension system-wide,
 lets OBS reach the local network, and installs the FFmpeg libraries that NDI needs to decode

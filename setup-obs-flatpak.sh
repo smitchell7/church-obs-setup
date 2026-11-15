@@ -22,6 +22,8 @@
 # PTZ_BUNDLE=/path/to/file.flatpak uses a different obs-ptz bundle than vendor/.
 # DSK_REPO=owner/name downloads Downstream Keyer from a different GitHub repo's releases.
 # DSK_BUNDLE=/path/to/file.flatpak installs Downstream Keyer from a local file instead of downloading it.
+# OBS_X11=1 / OBS_X11=0 forces OBS to run through X11 (XWayland) or never. Without it, that happens only when OBS opens on
+# the Independence Building collection (its external projector crashes OBS under Wayland).
 set -euo pipefail
 
 OBS_ID=com.obsproject.Studio
@@ -384,6 +386,13 @@ if [ "$CONFIG_CHOICE" != none ]; then
   as_user env OBS_WEBSOCKET_PASSWORD="${OBS_WEBSOCKET_PASSWORD:-2ne2-14}" python3 -I "$SCRIPT_DIR/tools/set-obs-websocket.py" "$TARGET_HOME/.var/app/$OBS_ID/config/obs-studio"
   # The window layout, with the PTZ Controls dock in place.
   as_user python3 -I "$SCRIPT_DIR/tools/set-obs-docks.py" "$TARGET_HOME/.var/app/$OBS_ID/config/obs-studio"
+  # On the Independence Building computer (OBS opens on its collection), run OBS through X11 (XWayland): opening an
+  # external projector there, under Wayland, crashed OBS ("Wayland connection ... fatal error: Protocol error").
+  # OBS_X11=1 does this on any computer, OBS_X11=0 never. Other computers are left as they are.
+  if [ "${OBS_X11:-auto}" = 1 ] || { [ "${OBS_X11:-auto}" = auto ] && [ "$CONFIG_CHOICE" = independence-building ]; }; then
+    echo "Running OBS through X11 (XWayland) so its projector windows do not crash it"
+    as_user env flatpak override --user --socket=x11 --nosocket=wayland --env=QT_QPA_PLATFORM=xcb "$OBS_ID"
+  fi
   # Open OBS on the chosen default scene collection.
   if [ "$CONFIG_CHOICE" != keep ]; then
     as_user python3 -I "$SCRIPT_DIR/tools/set-obs-collection.py" "$TARGET_HOME/.var/app/$OBS_ID/config/obs-studio" "$SCRIPT_DIR/configs/$CONFIG_CHOICE"/*.json
