@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Point OBS's audio monitoring device at the virtual "OBS Monitoring (not for Zoom)" sink (see audio/obs-to-zoom.conf),
-and open OBS in studio mode.
+"""Point OBS's audio monitoring device at the virtual "OBS Monitoring (not for Zoom)" sink (see audio/obs-to-zoom.conf).
 
 Usage: set-obs-monitor.py OBS_CONFIG_DIR  (e.g. ~/.var/app/com.obsproject.Studio/config/obs-studio)
 Sets it in every existing profile; if OBS has never been run, creates a "Church" profile with it.
-OBS saves studio mode on exit, so it is only the starting state.
+Studio mode is set by set-obs-docks.py.
 """
 import configparser
 import pathlib
@@ -30,9 +29,6 @@ def save(cp, path):
 
 root = pathlib.Path(sys.argv[1])
 user = load(root / "user.ini")
-if not user.has_section("BasicWindow"):
-    user.add_section("BasicWindow")
-user["BasicWindow"]["PreviewProgramMode"] = "true"
 profiles = sorted(p for p in (root / "basic" / "profiles").glob("*") if p.is_dir())
 if not profiles:
     profiles = [root / "basic" / "profiles" / "Church"]

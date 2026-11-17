@@ -64,7 +64,7 @@ unless they say "at the laptop".
    ```powershell
    cd $env:TEMP
    irm https://raw.githubusercontent.com/smitchell7/church-obs-setup/HEAD/setup-obs-windows.ps1 -OutFile setup-obs-windows.ps1
-   powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1 -Config alkire-and-quail
+   powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1 -Config sacrament-alkire-and-quail
    ```
 2. Expect, in order: Git installed; the repo cloned to `C:\church-obs-setup` on its default branch; the script
    continuing from there (`[2/7]` onwards); OBS 33+, NDI Runtime, DistroAV, obs-ptz, ffmpeg installed.
@@ -76,18 +76,18 @@ unless they say "at the laptop".
 
 ### B. Files it should leave
 
-- `%APPDATA%\obs-studio\basic\scenes\alkire-and-quail.json`: valid JSON; "USB Audio" is `wasapi_input_capture`
+- `%APPDATA%\obs-studio\basic\scenes\sacrament-alkire-and-quail.json` (and the other collections): valid JSON; "USB Audio" is `wasapi_input_capture`
   with the chosen `device_id`; "USB Audio" and "Sacrament Music" have `monitoring_type` 2 and
   `monitoring_enabled` true; no `@HOME@` or `@AUDIO_DEVICE@` left.
 - `%APPDATA%\obs-studio\basic\profiles\*\basic.ini`: `[Audio]` has `MonitoringDeviceId` and
-  `MonitoringDeviceName=CABLE Input (VB-Audio Virtual Cable)`.
+  `MonitoringDeviceName=CABLE Input (VB-Audio Virtual Cable)` (or `Speakers (VB-Audio Virtual Cable)` with newer VB-CABLE).
 - `Documents\sacrament\`: `sacrament-graphic.png`, `hymns\*.mp3` (8 hymns), `sacrament-playlist.mp3`
   (about 29 minutes).
 
 ### C. In OBS (at the laptop, or started over SSH)
 
-1. OBS opens on Alkire and Quail - NDI. The scenes are Joystick, Pulpit - P0 ... Choir - P8, Sacrament.
-2. Settings > Audio > Advanced > Monitoring Device is "CABLE Input (VB-Audio Virtual Cable)".
+1. OBS opens on Sacrament - Alkire and Quail Building, in Studio Mode, on Full Room - P3. The scenes are Pulpit - P0 ... Choir - P8, Sacrament.
+2. Settings > Audio > Advanced > Monitoring Device is "CABLE Input (VB-Audio Virtual Cable)" (newer VB-CABLE versions: "Speakers (VB-Audio Virtual Cable)").
 3. Edit > Advanced Audio Properties: "USB Audio" and "Sacrament Music" say "Monitor and Output".
 4. The "USB Audio" source's device is the USB input; the PTZ Controls dock lists the camera.
 5. The camera's NDI video shows (Windows firewall rule and NDI Runtime).
@@ -101,7 +101,7 @@ Record "CABLE Output (VB-Audio Virtual Cable)" (what Zoom hears) with ffmpeg whi
 (`ffmpeg -i cap.wav -af volumedetect -f null -`):
 
 1. Sacrament scene: the music is heard.
-2. Joystick scene: the music stops and the USB input is heard; the camera does not move.
+2. Full Room - P3 scene: the music stops and the USB input is heard; the camera moves to its Full Room preset.
 3. Back to Sacrament: the music starts again; with the music's monitoring turned off for a moment, the
    recording is silent (no microphone under the music).
 4. In Zoom: the microphone list has "CABLE Output (VB-Audio Virtual Cable)" and its level meter moves.

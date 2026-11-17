@@ -19,8 +19,9 @@ import urllib.request
 
 PAGE = "https://www.churchofjesuschrist.org/media/music/songs/{}?lang=eng"
 UA = {"User-Agent": "Mozilla/5.0"}
-# The page lists every recording; the piano accompaniment is the AUDIO_ACCOMPANIMENT one.
-MP3_RE = re.compile(r'"assetType":"AUDIO_ACCOMPANIMENT","distributionUrl":"([^"]+\.mp3)"')
+# The page lists every recording; the piano accompaniment is the AUDIO_ACCOMPANIMENT one. Most hymns have it as
+# an MP3; some newer ones (e.g. Bread of Life, Living Water) only as an M4A, which is converted to MP3.
+ACCOMP_RE = re.compile(r'"assetType":"AUDIO_ACCOMPANIMENT","distributionUrl":"([^"]+\.(mp3|m4a))"')
 
 
 def fetch(url, timeout=60):
@@ -39,12 +40,23 @@ def read_list(path):
 
 def download(slug, dest):
     html = fetch(PAGE.format(slug)).decode("utf-8", "replace")
-    m = MP3_RE.search(html)
-    if not m:
+    found = {ext: url for url, ext in ACCOMP_RE.findall(html)}
+    if not found:
         raise RuntimeError("no piano accompaniment listed on the page")
-    data = fetch(m.group(1), timeout=120)
+    url = found.get("mp3") or found["m4a"]
+    data = fetch(url, timeout=120)
     tmp = dest.with_suffix(".part")
-    tmp.write_bytes(data)
+    if url.endswith(".mp3"):
+        tmp.write_bytes(data)
+    else:
+        # Convert the M4A to an MP3 like the others, so the hymns folder holds one format.
+        src = dest.with_suffix(".part.m4a")
+        src.write_bytes(data)
+        try:
+            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(src), "-vn", "-c:a", "libmp3lame",
+                            "-q:a", "4", "-f", "mp3", str(tmp)], check=True)
+        finally:
+            src.unlink(missing_ok=True)
     tmp.replace(dest)
 
 

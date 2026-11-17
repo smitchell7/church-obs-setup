@@ -1,23 +1,29 @@
 #!/usr/bin/env python3
-"""Update just the OBS scene collections on this computer from this repo.
+"""Update the OBS scene collections and the OBS configuration on this computer from this repo.
 
-Installs every collection in configs/ the same way setup-obs-flatpak.sh does, without running the rest of
-the setup (no software installs, no audio or other OBS settings). The Windows twin is
-tools/update-obs-collections.ps1.
+Installs every collection in obs-configuration/ and the OBS settings the same way setup-obs-flatpak.sh does,
+without running the rest of the setup (no software installs, no sudo, no PipeWire audio files, and the video
+settings are left alone). The Windows twin is tools/obs-config-update.ps1.
 
 Usage (as the person who uses OBS, not with sudo; close OBS first):
-    python3 tools/update-obs-collections.py [--default alkire-and-quail|independence-building]
+    python3 tools/obs-config-update.py [--default FOLDER]   (FOLDER: a collection folder in obs-configuration/, e.g. sacrament-independence)
 
 - Each file it replaces is saved next to it as *.bak.
 - Keeps what was already picked in OBS, by source name: the "USB Audio" microphone, capture devices and
   NDI senders. A new "USB Audio" gets the input the setup script would pick (Sound Blaster, else USB, ...).
 - Builds the notch filter plugins (tools/hum-notch-vst/build.sh) into ~/.vst if any are missing, and sets
   VST_PATH for the OBS Flatpak so it finds them.
-- Asks which collection OBS opens on, like the setup script (1 alkire-and-quail, 2 independence-building);
-  --default answers up front. Run without a terminal to ask in, it leaves OBS's current one.
+- Puts back the OBS window layout (obs-configuration/obs-layout.ini)
+  every time, and turns studio mode on (tools/set-obs-docks.py).
+- Pins OBS to the GNOME dock if it isn't (tools/set-obs-dock-pin.py).
+- Points OBS's audio monitoring at the speaker that feeds Zoom (tools/set-obs-monitor.py) and turns on the
+  WebSocket server, keeping its password (tools/set-obs-websocket.py).
+- Asks which collection OBS opens on (the same menu as the setup script), with the current one marked; Enter keeps
+  it. --default answers up front. Run without a terminal to ask in, it leaves OBS's current one.
 """
 import argparse
 import json
+import os
 import pathlib
 import re
 import shutil
@@ -30,28 +36,42 @@ OBS_DIR = pathlib.Path.home() / ".var/app/com.obsproject.Studio/config/obs-studi
 SCENES = OBS_DIR / "basic" / "scenes"
 
 parser = argparse.ArgumentParser(description="Update just the OBS scene collections from this repo.")
-parser.add_argument("--default", help="the collection OBS opens on (a folder name in configs/)")
+parser.add_argument("--default", help="the collection OBS opens on (a folder name in obs-configuration/)")
 args = parser.parse_args()
 
 if subprocess.run(["pgrep", "-f", "com.obsproject.Studio"], capture_output=True).returncode == 0:
     sys.exit("Close OBS first, then run this again.")
 # Which collection OBS opens on: the same menu, in the same order, as setup-obs-flatpak.sh.
-found = sorted(p.name for p in (REPO / "configs").iterdir() if p.is_dir())
-names = [n for n in ("alkire-and-quail", "independence-building") if n in found]
+found = sorted(p.name for p in (REPO / "obs-configuration").iterdir() if p.is_dir())
+names = [n for n in ("sacrament-alkire-and-quail", "sacrament-independence", "stake-meeting-alkire-and-quail", "stake-meeting-independence", "stake-meeting-independence-control") if n in found]
 names += [n for n in found if n not in names]
-configs = [REPO / "configs" / n for n in names]
+configs = [REPO / "obs-configuration" / n for n in names]
+# Which collection OBS opens on: asked every time, with the one OBS was using marked; Enter keeps it.
+current_file = ""
+if (OBS_DIR / "user.ini").exists():
+    for line in (OBS_DIR / "user.ini").read_text(encoding="utf-8-sig", errors="replace").splitlines():
+        if line.startswith("SceneCollectionFile="):
+            current_file = line.split("=", 1)[1].strip()
+            break
+current = current_file.removesuffix(".json") if current_file.removesuffix(".json") in names else ""
 if args.default:
     if args.default not in names:
         sys.exit(f"No collection named {args.default} (have: {', '.join(names)})")
 elif sys.stdin.isatty() and names:
-    print("Which scene collection should OBS open on by default?")
+    print("Which scene collection should OBS open on?")
     for i, n in enumerate(names, 1):
-        print(f"  {i}) {n}")
+        print(f"  {i}) {n}" + ("   (current)" if n == current else ""))
+    prompt = f"Number (Enter keeps {current}): " if current else "Number: "
     while True:
-        answer = input("Number: ").strip()
+        answer = input(prompt).strip()
+        if not answer and current:
+            print(f"Keeping {current}.")
+            break
         if answer.isdigit() and 1 <= int(answer) <= len(names):
             args.default = names[int(answer) - 1]
             break
+elif current:
+    print(f"Keeping the scene collection OBS was using ({current_file}). Use --default NAME to change it.")
 
 
 def pick_microphone():
@@ -73,7 +93,7 @@ def pick_microphone():
 
 microphone = None
 SCENES.mkdir(parents=True, exist_ok=True)
-print(f"Scene collections from {REPO / 'configs'}")
+print(f"Scene collections from {REPO / 'obs-configuration'}")
 for config in configs:
     for src in sorted(config.glob("*.json")):
         dest = SCENES / src.name
@@ -131,7 +151,18 @@ if plugins and shutil.which("flatpak"):
         else:
             print("WARNING: could not set VST_PATH for OBS; the notch filters on 'USB Audio' will not load.")
 
+# The window layout and studio mode on, put back every time, as the setup script does.
+subprocess.run([sys.executable, "-I", str(REPO / "tools" / "set-obs-docks.py"), str(OBS_DIR)], check=True)
+# The rest of the OBS configuration the setup script makes (it never needs sudo):
+# audio monitoring into the "OBS Monitoring (not for Zoom)" speaker that feeds Zoom's "OBS Mic", and
+# the WebSocket server for remote control (the computer's current password is kept).
+subprocess.run([sys.executable, "-I", str(REPO / "tools" / "set-obs-monitor.py"), str(OBS_DIR)], check=True)
+env = {k: v for k, v in os.environ.items() if k != "OBS_WEBSOCKET_PASSWORD"}
+subprocess.run([sys.executable, "-I", str(REPO / "tools" / "set-obs-websocket.py"), str(OBS_DIR)], check=True, env=env)
+# OBS pinned to the GNOME dock (put back if someone unpinned it).
+subprocess.run([sys.executable, "-I", str(REPO / "tools" / "set-obs-dock-pin.py")], check=False)
+
 if args.default:
-    collection = next((REPO / "configs" / args.default).glob("*.json"))
+    collection = next((REPO / "obs-configuration" / args.default).glob("*.json"))
     subprocess.run([sys.executable, "-I", str(REPO / "tools" / "set-obs-collection.py"), str(OBS_DIR), str(collection)],
                    check=True)

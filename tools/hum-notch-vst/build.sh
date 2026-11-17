@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Builds the Hum, Squeal and tone-notch VST 2.x plugins and installs them to ~/.vst/. The Independence Building - Hardware
-# collection already has them as filters on "USB Audio"; the OBS Flatpak needs VST_PATH=~/.vst for that (the setup script
+# Builds the Hum, Squeal and tone-notch VST 2.x plugins and installs them to ~/.vst/. Every scene collection
+# already has them as filters on "USB Audio"; the OBS Flatpak needs VST_PATH=~/.vst for that (the setup script
 # sets it). Run as the normal user (no sudo). Needs gcc (sudo apt-get install -y gcc). Restart OBS afterwards.
 # Don't pick a plug-in from OBS's Filters dialog: in the Flatpak its list is empty and OBS saves a blank path.
 # The eye icon on each filter turns it on and off.

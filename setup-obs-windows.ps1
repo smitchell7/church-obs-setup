@@ -12,17 +12,17 @@
      comes from the fork https://github.com/harmanmj/obs-downstream-keyer (adds Load On Scene), or from
      exeldro/obs-downstream-keyer when the fork has no release published
   5. ffmpeg (via winget) and VB-Audio Virtual Cable, the virtual microphone Zoom listens to
-  6. OBS configuration: every scene collection in configs\, with the chosen one set as the default, with the USB input picked, OBS's audio
+  6. OBS configuration: every scene collection in obs-configuration\, with the chosen one set as the default, with the USB input picked, OBS's audio
      monitoring sent to the virtual cable, the window layout with PTZ Controls docked, and a firewall rule
      for NDI
   7. The sacrament graphic and the sacrament music playlist in Documents\sacrament
 
   Run from an elevated PowerShell (right-click, Run as administrator), as the person who uses OBS:
-    powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1 [-Config alkire-and-quail|independence-building | -NoConfig]
+    powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1 [-Config FOLDER | -NoConfig]
   The script can be run again at any time; it installs only what is missing and refreshes the configuration.
 
-.PARAMETER Config       Every scene collection in configs\ is installed; this is the one OBS opens on by
-                        default: alkire-and-quail or independence-building (asks if omitted).
+.PARAMETER Config       Every scene collection in obs-configuration\ is installed; this is the one OBS opens on by
+                        default: a collection folder in obs-configuration, e.g. sacrament-independence (if omitted: asks, with the current one marked; Enter keeps it).
 .PARAMETER NoConfig     Skip the OBS scene collections.
 .PARAMETER AudioDevice  The microphone input for OBS: part of its name as Windows shows it, or its endpoint id.
                         Default: the Sound Blaster, else any USB input, else the first other input that is
@@ -186,8 +186,16 @@ if ($have -and $have -ge $MinObs) {
 # ---- 3. NDI Runtime ----------------------------------------------------------
 Step '[3/7] NDI Runtime (needed by DistroAV)'
 function Find-Ndi {
-    $dir = [Environment]::GetEnvironmentVariable('NDILIB_REDIST_FOLDER', 'Machine')
-    return ($dir -and (Test-Path (Join-Path $dir 'Processing.NDI.Lib.x64.dll')))
+    # DistroAV finds NDI through NDI_RUNTIME_DIR_V6 (or V5), which the NDI 6 Runtime and NDI Tools installers set;
+    # NDILIB_REDIST_FOLDER is the older name. The runtime's own folder is checked too, in case the variable is
+    # only set after a restart.
+    $dirs = @('NDI_RUNTIME_DIR_V6', 'NDI_RUNTIME_DIR_V5', 'NDILIB_REDIST_FOLDER' | ForEach-Object {
+        [Environment]::GetEnvironmentVariable($_, 'Machine')
+    }) + @(Join-Path $env:ProgramFiles 'NDI\NDI 6 Runtime\v6')
+    foreach ($dir in $dirs) {
+        if ($dir -and (Test-Path (Join-Path $dir 'Processing.NDI.Lib.x64.dll'))) { return $true }
+    }
+    return $false
 }
 if (Find-Ndi) {
     Write-Host '    NDI Runtime is installed.'
@@ -230,8 +238,16 @@ $null = Install-FromGitHub 'DistroAV/DistroAV' 'distroav-*-windows-x64-Installer
 # Downstream Keyer from $DskRepo, the fork that adds Load On Scene; its releases are betas so far. Matches both
 # exeldro's downstream-keyer-X-windows-installer.exe and the fork's downstream-keyer-X-windows-x64-Installer.exe.
 $dskPattern = 'downstream-keyer-*-windows*installer.exe'
-if (-not (Install-FromGitHub $DskRepo $dskPattern 'Downstream Keyer' -IncludePrerelease -NoFail)) {
-    Write-Warning "No Downstream Keyer installer is published in $DskRepo; installing exeldro's release instead."
+# Fall back to exeldro's release (the Windows equivalent of Flathub's on Ubuntu) whenever the fork can't be used:
+# no installer published, or the fork can't be reached or downloaded from.
+$dskFromFork = $false
+try {
+    $dskFromFork = Install-FromGitHub $DskRepo $dskPattern 'Downstream Keyer' -IncludePrerelease -NoFail
+    if (-not $dskFromFork) { Write-Warning "No Downstream Keyer installer is published in $DskRepo; installing exeldro's release instead." }
+} catch {
+    Write-Warning "Could not get Downstream Keyer from $DskRepo ($($_.Exception.Message)); installing exeldro's release instead."
+}
+if (-not $dskFromFork) {
     $null = Install-FromGitHub 'exeldro/obs-downstream-keyer' $dskPattern 'Downstream Keyer'
 }
 if ($PtzInstaller) {
@@ -256,10 +272,16 @@ function Get-AudioEndpoints($kind) {   # 'Capture' (inputs) or 'Render' (outputs
         if (-not $props) { continue }
         $desc = $props.'{a45c254e-df1c-4efd-8020-67d146a850e0},2'    # e.g. "Microphone", "CABLE Input"
         $iface = $props.'{b3f8fa53-0004-438e-9003-51a46e139bfc},6'   # e.g. "Sound Blaster Play! 3"
-        [pscustomobject]@{ Id = $prefix + $k.PSChildName; Name = "$desc ($iface)"; Description = $desc }
+        [pscustomobject]@{ Id = $prefix + $k.PSChildName; Name = "$desc ($iface)"; Description = $desc; Interface = $iface }
     }
 }
-function Find-CableInput { Get-AudioEndpoints 'Render' | Where-Object Description -like 'CABLE Input*' | Select-Object -First 1 }
+# The virtual cable's input (what OBS monitors into). Older VB-CABLE versions call it "CABLE Input"; newer ones list
+# it as "Speakers (VB-Audio Virtual Cable)", next to a 16-channel "CABLE In 16 Ch", which isn't the one to use.
+function Find-CableInput {
+    Get-AudioEndpoints 'Render' |
+        Where-Object { ($_.Description -like 'CABLE Input*' -or $_.Interface -like 'VB-Audio Virtual Cable*') -and $_.Description -notlike '*16 Ch*' } |
+        Sort-Object { $_.Description -notlike 'CABLE Input*' } | Select-Object -First 1
+}
 
 Step '[5/7] ffmpeg (for the sacrament playlist) and VB-Audio Virtual Cable (for Zoom)'
 function Find-Ffmpeg {
@@ -315,13 +337,13 @@ if (-not (Get-NetFirewallRule -DisplayName 'OBS Studio (church setup)' -ErrorAct
         -Program $ObsExe -Profile Any | Out-Null
 }
 
-$configRoot = Join-Path $ScriptDir 'configs'
+$configRoot = Join-Path $ScriptDir 'obs-configuration'
 $found = @()
 if (Test-Path $configRoot) { $found = @(Get-ChildItem $configRoot -Directory | ForEach-Object Name) }
-# Menu order: alkire-and-quail first, then independence-building, then anything else.
-$configs = @(@('alkire-and-quail', 'independence-building') | Where-Object { $found -contains $_ }) +
-           @($found | Where-Object { @('alkire-and-quail', 'independence-building') -notcontains $_ })
-# Every scene collection in configs\ is installed; $Config is the one OBS opens on. $InstallCollections is
+# Menu order: the Sacrament collections (Alkire and Quail, Independence), then the Stake Meeting ones (same order), then Control, then anything else.
+$configs = @(@('sacrament-alkire-and-quail', 'sacrament-independence', 'stake-meeting-alkire-and-quail', 'stake-meeting-independence', 'stake-meeting-independence-control') | Where-Object { $found -contains $_ }) +
+           @($found | Where-Object { @('sacrament-alkire-and-quail', 'sacrament-independence', 'stake-meeting-alkire-and-quail', 'stake-meeting-independence', 'stake-meeting-independence-control') -notcontains $_ })
+# Every scene collection in obs-configuration\ is installed; $Config is the one OBS opens on. $InstallCollections is
 # false only with -NoConfig (or nothing to install); $Config empty otherwise means "leave the default as it is".
 $InstallCollections = -not $NoConfig -and $configs.Count -gt 0
 if ($NoConfig) {
@@ -329,15 +351,31 @@ if ($NoConfig) {
 } elseif ($Config) {
     if ($configs -notcontains $Config) { Fail "No such configuration: $Config (have: $($configs -join ', '))" }
 } elseif ($InstallCollections) {
-    if (-not [Environment]::UserInteractive) {
-        Write-Host '    No -Config given and nothing to ask; installing the scene collections without changing which one OBS opens on.'
+    # Which collection OBS opens on: asked every time, with the one OBS was using marked; Enter keeps it.
+    $userIni = Join-Path $env:APPDATA 'obs-studio\user.ini'
+    $currentFile = if (Test-Path $userIni) {
+        Get-Content $userIni | Where-Object { $_ -like 'SceneCollectionFile=*' } | Select-Object -First 1 | ForEach-Object { $_.Substring(20) }
+    }
+    $current = ''
+    if ($currentFile -and ($configs -contains [IO.Path]::GetFileNameWithoutExtension($currentFile))) {
+        $current = [IO.Path]::GetFileNameWithoutExtension($currentFile)
+    }
+    if ([Environment]::UserInteractive) {
+        Write-Host 'All the scene collections are installed. Which one should OBS open on?'
+        for ($i = 0; $i -lt $configs.Count; $i++) {
+            $mark = if ($configs[$i] -eq $current) { '   (current)' } else { '' }
+            Write-Host "  $($i + 1)) $($configs[$i])$mark"
+        }
+        $prompt = if ($current) { "Number (Enter keeps $current)" } else { 'Number' }
+        while ($true) {
+            $n = Read-Host $prompt
+            if (-not $n -and $current) { Write-Host "    Keeping $current."; break }
+            if ($n -match '^\d+$' -and [int]$n -ge 1 -and [int]$n -le $configs.Count) { $Config = $configs[[int]$n - 1]; break }
+        }
+    } elseif ($current) {
+        Write-Host "    Keeping the scene collection OBS was using ($currentFile). Use -Config NAME to change it."
     } else {
-        Write-Host 'All the scene collections are installed. Which one should OBS open on by default?'
-        for ($i = 0; $i -lt $configs.Count; $i++) { Write-Host "  $($i + 1)) $($configs[$i])" }
-        do {
-            $n = Read-Host 'Number'
-        } until ($n -match '^\d+$' -and [int]$n -ge 1 -and [int]$n -le $configs.Count)
-        $Config = $configs[[int]$n - 1]
+        Write-Host '    No -Config given and nothing to ask; installing the scene collections without changing which one OBS opens on.'
     }
 }
 
@@ -349,7 +387,7 @@ $utf8 = New-Object System.Text.UTF8Encoding $false
 
 if ($InstallCollections) {
     # The microphone: the "USB Audio" source is a PulseAudio input in the repo; on Windows it is a WASAPI input.
-    $inputs = @(Get-AudioEndpoints 'Capture' | Where-Object { $_.Description -notlike 'CABLE Output*' })
+    $inputs = @(Get-AudioEndpoints 'Capture' | Where-Object { $_.Description -notlike 'CABLE Output*' -and $_.Interface -notlike 'VB-Audio Virtual Cable*' })
     $pick = $null
     if ($AudioDevice) {
         $pick = $inputs | Where-Object { $_.Id -eq $AudioDevice -or $_.Name -like "*$AudioDevice*" } | Select-Object -First 1
@@ -369,10 +407,28 @@ if ($InstallCollections) {
     $deviceName = if ($pick) { $pick.Name } else { 'the Windows default input' }
     Write-Host "    Audio input for OBS: $deviceName (change it on the 'USB Audio' source in OBS if this is wrong)"
 
+    # The notch filters on "USB Audio" (HumNotch, SquealNotch, Notch6381, Notch13623) are VST 2.x plugins. The
+    # Windows builds are in the repo (tools\hum-notch-vst\windows, built by build-windows.ps1); they go to
+    # C:\Program Files\VSTPlugins, a folder OBS's VST filter lists, and the filters point there.
+    $VstDir = Join-Path $env:ProgramFiles 'VSTPlugins'
+    $vstBuilt = @(Get-ChildItem (Join-Path $ScriptDir 'tools\hum-notch-vst\windows') -Filter *.dll -ErrorAction SilentlyContinue)
+    if ($vstBuilt.Count -gt 0) {
+        New-Item -ItemType Directory -Force $VstDir | Out-Null
+        try {
+            $vstBuilt | Copy-Item -Destination $VstDir -Force
+            Write-Host "    Notch filter plugins in ${VstDir}: $(($vstBuilt | ForEach-Object BaseName) -join ', ')"
+        } catch {
+            Write-Warning "Could not copy the notch filter plugins to $VstDir (is OBS open?): $($_.Exception.Message)"
+        }
+    } else {
+        Write-Warning 'No notch filter plugins in tools\hum-notch-vst\windows; the filters on "USB Audio" will not load.'
+    }
+
     $scenes = Join-Path $ObsDir 'basic\scenes'
     New-Item -ItemType Directory -Force $scenes | Out-Null
     # OBS accepts forward slashes in paths, and they need no JSON escaping
     $sacramentFwd = $MusicDir -replace '\\', '/'
+    $vstFwd = $VstDir -replace '\\', '/'
     foreach ($f in $configs | ForEach-Object { Get-ChildItem (Join-Path $configRoot $_) -Filter *.json }) {
         $dest = Join-Path $scenes $f.Name
         if (Test-Path $dest) { Copy-Item $dest "$dest.$(Get-Date -Format yyyyMMdd-HHmmss).bak" }
@@ -384,6 +440,8 @@ if ($InstallCollections) {
         # Video capture devices (the ATEM Mini) are V4L2 inputs in the repo; on Windows they are DirectShow inputs.
         $text = $text.Replace('"id": "v4l2_input"', '"id": "dshow_input"')
         $text = $text.Replace('"versioned_id": "v4l2_input"', '"versioned_id": "dshow_input"')
+        # The notch filters load ~/.vst/<name>.so on Linux; on Windows, <name>.dll from C:\Program Files\VSTPlugins.
+        $text = [regex]::Replace($text, '@HOME@/\.vst/([^"/]+)\.so', ($vstFwd + '/$1.dll'))
         $text = $text.Replace('@AUDIO_DEVICE@', $deviceId)
         [IO.File]::WriteAllText($dest, $text, $utf8)
     }
@@ -426,29 +484,27 @@ if ($profiles.Count -eq 0) {
 & (Get-Process -Id $PID).Path -NoProfile -ExecutionPolicy Bypass -File (Join-Path $ScriptDir 'tools\set-obs-video.ps1') -ObsDir $ObsDir -IfFirstSetup
 if ($LASTEXITCODE -ne 0) { Write-Warning 'Could not set the OBS video; see tools\set-obs-video.ps1' }
 
-$cable = Find-CableInput
-if ($cable) {
-    foreach ($p in $profiles) {
-        Set-IniValues (Join-Path $p.FullName 'basic.ini') 'Audio' @{ MonitoringDeviceId = $cable.Id; MonitoringDeviceName = $cable.Name }
-        Write-Host "    OBS monitoring device ($($p.Name)): $($cable.Name)"
-    }
-} else {
-    Write-Warning 'The virtual cable is not active yet, so OBS monitoring was not pointed at it. Restart Windows and run this again.'
-}
+# OBS's audio monitoring into the virtual cable, which Zoom hears as its microphone (the update script does the same).
+& (Get-Process -Id $PID).Path -NoProfile -ExecutionPolicy Bypass -File (Join-Path $ScriptDir 'tools\set-obs-monitor.ps1') -ObsDir $ObsDir
+if ($LASTEXITCODE -ne 0) { Write-Warning 'Could not set the OBS monitoring device; see tools\set-obs-monitor.ps1' }
 
-# Open OBS in studio mode. OBS saves this on exit, so it is only the starting state.
-Set-IniValues (Join-Path $ObsDir 'user.ini') 'BasicWindow' @{ PreviewProgramMode = 'true' }
+# Remote control: OBS's WebSocket server on port 4455, as on Ubuntu, so this computer can stand in as the main OBS
+# for the Stake Meeting control laptop. Password from $env:OBS_WEBSOCKET_PASSWORD, else the same default as Ubuntu.
+$wsPassword = if ($env:OBS_WEBSOCKET_PASSWORD) { $env:OBS_WEBSOCKET_PASSWORD } else { '2ne2-14' }
+& (Get-Process -Id $PID).Path -NoProfile -ExecutionPolicy Bypass -File (Join-Path $ScriptDir 'tools\set-obs-websocket.ps1') -ObsDir $ObsDir -Password $wsPassword
+if ($LASTEXITCODE -ne 0) { Write-Warning 'Could not turn on the OBS WebSocket server; see tools\set-obs-websocket.ps1' }
+
 
 # The window layout, with the PTZ Controls dock in place.
+# and studio mode on.
 & (Get-Process -Id $PID).Path -NoProfile -ExecutionPolicy Bypass -File (Join-Path $ScriptDir 'tools\set-obs-docks.ps1') -ObsDir $ObsDir
 if ($LASTEXITCODE -ne 0) { Write-Warning 'Could not install the OBS layout; see tools\set-obs-docks.ps1' }
 
 # Open OBS on the chosen default scene collection.
 if ($InstallCollections -and $Config) {
     $collection = Get-ChildItem (Join-Path $configRoot $Config) -Filter *.json | Select-Object -First 1
-    $name = ([IO.File]::ReadAllText($collection.FullName, [Text.Encoding]::UTF8) | ConvertFrom-Json).name
-    Set-IniValues (Join-Path $ObsDir 'user.ini') 'Basic' @{ SceneCollection = $name; SceneCollectionFile = $collection.Name }
-    Write-Host "    OBS will open with the '$name' scene collection."
+    & (Get-Process -Id $PID).Path -NoProfile -ExecutionPolicy Bypass -File (Join-Path $ScriptDir 'tools\set-obs-collection.ps1') -ObsDir $ObsDir -Collection $collection.FullName
+    if ($LASTEXITCODE -ne 0) { Write-Warning 'Could not set the default scene collection; see tools\set-obs-collection.ps1' }
 }
 
 # ---- 7. Sacrament graphic and music playlist -----------------------------------

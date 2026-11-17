@@ -9,13 +9,21 @@
  * It must have at least one parameter: OBS saves a VST filter's settings by copying its parameter list
  * with &params[0], which aborts OBS (checked builds, e.g. the flatpak) when the list is empty.
  *
- * Written against the VST 2.4 binary interface directly (no SDK). Build and install with build.sh.
+ * Written against the VST 2.4 binary interface directly (no SDK). Build and install with build.sh (Linux .so)
+ * or build-windows.ps1 (Windows .dll).
  */
+#define _USE_MATH_DEFINES /* M_PI from the Windows math.h */
 #include <math.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef _WIN32
+#define VST_EXPORT __declspec(dllexport)
+#else
+#define VST_EXPORT __attribute__((visibility("default")))
+#endif
 
 #define CHANNELS 2
 #ifndef NOTCH_HZ
@@ -160,7 +168,7 @@ static intptr_t dispatcher(AEffect *e, int32_t op, int32_t index, intptr_t value
 	}
 }
 
-__attribute__((visibility("default"))) AEffect *VSTPluginMain(HostCallback host)
+VST_EXPORT AEffect *VSTPluginMain(HostCallback host)
 {
 	(void)host;
 	Plugin *p = calloc(1, sizeof *p);
@@ -183,6 +191,8 @@ __attribute__((visibility("default"))) AEffect *VSTPluginMain(HostCallback host)
 	return e;
 }
 
-/* Older Linux VST hosts look for "main". */
-__attribute__((visibility("default"))) AEffect *main_plugin(HostCallback host) __asm__("main");
+#ifndef _WIN32
+/* Older Linux VST hosts look for "main". (OBS on Windows looks for VSTPluginMain.) */
+VST_EXPORT AEffect *main_plugin(HostCallback host) __asm__("main");
 AEffect *main_plugin(HostCallback host) { return VSTPluginMain(host); }
+#endif

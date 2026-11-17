@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Make an installed scene collection the one OBS opens with.
+"""Make an installed scene collection the one OBS opens with. The Windows twin is set-obs-collection.ps1.
 
 Usage: set-obs-collection.py OBS_CONFIG_DIR COLLECTION.json
-       (e.g. ~/.var/app/com.obsproject.Studio/config/obs-studio configs/alkire-and-quail/alkire-and-quail.json)
+       (e.g. ~/.var/app/com.obsproject.Studio/config/obs-studio obs-configuration/sacrament-alkire-and-quail/sacrament-alkire-and-quail.json)
 """
 import configparser
 import json

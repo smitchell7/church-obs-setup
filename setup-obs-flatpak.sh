@@ -13,11 +13,10 @@
 # the OBS configuration (scenes, audio, Zoom microphone).
 #   --install                   also update everything that is already installed (OBS, DistroAV,
 #                               Downstream Keyer, obs-ptz, NDI decoder libraries)
-#   --config=NAME / --no-config  every scene collection in configs/ is installed; NAME is the one OBS
+#   --config=NAME / --no-config  every scene collection in obs-configuration/ is installed; NAME is the one OBS
 #                               opens on (without either, it asks when run in a terminal);
 #                               --no-config skips the OBS scenes and camera setup
-#   --pin-dock / --no-pin-dock  answer the "add OBS to the dock?" question up front
-#                               (without either, it asks when run in a terminal)
+#   --pin-dock / --no-pin-dock  accepted for older instructions and ignored: OBS is always pinned to the dock
 # The user to configure is whoever ran sudo; override with TARGET_USER=name.
 # PTZ_BUNDLE=/path/to/file.flatpak uses a different obs-ptz bundle than vendor/.
 # DSK_REPO=owner/name downloads Downstream Keyer from a different GitHub repo's releases.
@@ -63,6 +62,18 @@ fi
 TARGET_HOME=$(getent passwd "$TARGET_USER" | cut -d: -f6)
 [ -d "$TARGET_HOME" ] || { echo "No home directory for $TARGET_USER" >&2; exit 1; }
 as_user() { sudo -u "$TARGET_USER" -H "$@"; }
+
+# A checkout in the user's home folder belongs to the user, so `git pull` (and tools/obs-config-update.py)
+# work without sudo. Older instructions cloned it with sudo, which left it owned by root; fix that here.
+# A checkout elsewhere (the autoinstall's /opt/church-obs-setup) is left as it is.
+case "$SCRIPT_DIR/" in
+  "$TARGET_HOME"/*)
+    if [ -d "$SCRIPT_DIR/.git" ] && [ -n "$(find "$SCRIPT_DIR" ! -user "$TARGET_USER" -print -quit 2>/dev/null)" ]; then
+      echo "==> Giving $SCRIPT_DIR back to $TARGET_USER (it was partly owned by root)"
+      chown -R "$TARGET_USER:$(id -gn "$TARGET_USER")" "$SCRIPT_DIR"
+    fi
+    ;;
+esac
 
 NDI_LIBS="$TARGET_HOME/.var/app/$OBS_ID/data/ndi-libs"
 PTZ_STAMP=/var/lib/church-obs-ptz-bundle.sha256
@@ -287,37 +298,46 @@ if mokutil --sb-state 2>/dev/null | grep -qi 'enabled'; then
   echo "NOTE: Secure Boot is on. If the virtual camera does not appear, the v4l2loopback module may need its signing key enrolled (see 'mokutil --import')." >&2
 fi
 
-# OBS scene collections and camera setup (configs/<name>/: alkire-and-quail and independence-building).
+# OBS scene collections and camera setup (obs-configuration/<name>/, one folder per collection).
 # Every collection is installed; CONFIG_CHOICE is the one OBS opens on ("keep" leaves that as it is).
 echo "==> Choosing the default OBS scene collection"
-mapfile -t FOUND < <(cd "$SCRIPT_DIR/configs" 2>/dev/null && ls -d */ 2>/dev/null | tr -d / || true)
-# Menu order: alkire-and-quail first, then independence-building, then anything else.
+mapfile -t FOUND < <(cd "$SCRIPT_DIR/obs-configuration" 2>/dev/null && ls -d */ 2>/dev/null | tr -d / || true)
+# Menu order: the Sacrament collections (Alkire and Quail, Independence), then the Stake Meeting ones (same order), then Control, then anything else.
 CONFIGS=()
-for c in alkire-and-quail independence-building; do
+for c in sacrament-alkire-and-quail sacrament-independence stake-meeting-alkire-and-quail stake-meeting-independence stake-meeting-independence-control; do
   [[ " ${FOUND[*]} " == *" $c "* ]] && CONFIGS+=("$c")
 done
 for c in "${FOUND[@]}"; do
   [[ " ${CONFIGS[*]} " == *" $c "* ]] || CONFIGS+=("$c")
 done
+# Which collection OBS opens on: asked every time, with the one OBS was using marked; Enter keeps it.
+CURRENT_FILE=$(sed -n 's/^SceneCollectionFile=//p' "$TARGET_HOME/.var/app/$OBS_ID/config/obs-studio/user.ini" 2>/dev/null | head -1 || true)
+CURRENT=${CURRENT_FILE%.json}
+[[ -n "$CURRENT" && " ${CONFIGS[*]} " == *" $CURRENT "* ]] || CURRENT=
 if [ "$CONFIG_CHOICE" = ask ]; then
   if [ "${#CONFIGS[@]}" -eq 0 ]; then
     CONFIG_CHOICE=none
   elif [ -t 0 ]; then
-    echo "All the scene collections are installed. Which one should OBS open on by default?"
-    PS3="Number: "
-    select choice in "${CONFIGS[@]}"; do
-      case "$choice" in
-        "") echo "Pick a number from the list." ;;
-        *) CONFIG_CHOICE=$choice; break ;;
-      esac
+    echo "All the scene collections are installed. Which one should OBS open on?"
+    for i in "${!CONFIGS[@]}"; do
+      if [ "${CONFIGS[$i]}" = "$CURRENT" ]; then echo "  $((i + 1))) ${CONFIGS[$i]}   (current)"; else echo "  $((i + 1))) ${CONFIGS[$i]}"; fi
     done
+    while :; do
+      if [ -n "$CURRENT" ]; then read -r -p "Number (Enter keeps $CURRENT): " n; else read -r -p "Number: " n; fi
+      if [ -z "$n" ] && [ -n "$CURRENT" ]; then echo "Keeping $CURRENT."; CONFIG_CHOICE=keep; break; fi
+      if [[ "$n" =~ ^[0-9]+$ ]] && [ "$n" -ge 1 ] && [ "$n" -le "${#CONFIGS[@]}" ]; then CONFIG_CHOICE=${CONFIGS[$((n - 1))]}; break; fi
+      echo "Pick a number from the list."
+    done
+  elif [ -n "$CURRENT" ]; then
+    echo "Keeping the scene collection OBS was using ($CURRENT_FILE). Use --config=NAME to change it."
+    CONFIG_CHOICE=keep
   else
     echo "No --config given and not running in a terminal; installing the scene collections without changing which one OBS opens on."
     CONFIG_CHOICE=keep
   fi
 fi
 if [ "$CONFIG_CHOICE" != none ]; then
-  if [ "$CONFIG_CHOICE" != keep ] && [ ! -d "$SCRIPT_DIR/configs/$CONFIG_CHOICE" ]; then
+  if [ "$CONFIG_CHOICE" != keep ] && [ ! -d "$SCRIPT_DIR/obs-configuration/$CONFIG_CHOICE" ]; then
     echo "No such configuration: $CONFIG_CHOICE (have: ${CONFIGS[*]:-none})" >&2; exit 1
   fi
   SCENES_DIR="$TARGET_HOME/.var/app/$OBS_ID/config/obs-studio/basic/scenes"
@@ -342,7 +362,7 @@ if [ "$CONFIG_CHOICE" != none ]; then
   if pgrep -u "$TARGET_USER" -f "$OBS_ID" >/dev/null; then
     echo "WARNING: OBS is running; it will overwrite these changes when it exits. Close OBS and run this again." >&2
   fi
-  for f in "$SCRIPT_DIR"/configs/*/*.json; do
+  for f in "$SCRIPT_DIR"/obs-configuration/*/*.json; do
     dest="$SCENES_DIR/$(basename "$f")"
     rendered=$(mktemp)
     sed -e "s|@HOME@|$TARGET_HOME|g" -e "s|@AUDIO_DEVICE@|$AUDIO_DEVICE|g" "$f" > "$rendered"
@@ -385,10 +405,11 @@ if [ "$CONFIG_CHOICE" != none ]; then
   # Remote control: OBS's WebSocket server on port 4455, on by default, password from OBS_WEBSOCKET_PASSWORD.
   as_user env OBS_WEBSOCKET_PASSWORD="${OBS_WEBSOCKET_PASSWORD:-2ne2-14}" python3 -I "$SCRIPT_DIR/tools/set-obs-websocket.py" "$TARGET_HOME/.var/app/$OBS_ID/config/obs-studio"
   # The window layout, with the PTZ Controls dock in place.
+  # and studio mode on.
   as_user python3 -I "$SCRIPT_DIR/tools/set-obs-docks.py" "$TARGET_HOME/.var/app/$OBS_ID/config/obs-studio"
   # Open OBS on the chosen default scene collection.
   if [ "$CONFIG_CHOICE" != keep ]; then
-    as_user python3 -I "$SCRIPT_DIR/tools/set-obs-collection.py" "$TARGET_HOME/.var/app/$OBS_ID/config/obs-studio" "$SCRIPT_DIR/configs/$CONFIG_CHOICE"/*.json
+    as_user python3 -I "$SCRIPT_DIR/tools/set-obs-collection.py" "$TARGET_HOME/.var/app/$OBS_ID/config/obs-studio" "$SCRIPT_DIR/obs-configuration/$CONFIG_CHOICE"/*.json
   fi
   # PipeWire reads its drop-ins at start. If the user is logged in and the files changed or Zoom cannot see
   # the microphone yet (source obs_mic), restart PipeWire so it takes effect now instead of after the next
@@ -411,7 +432,7 @@ if [ "$CONFIG_CHOICE" != none ]; then
     fi
   fi
   echo "In Zoom pick, by name: Microphone 'OBS Mic (for Zoom)' (not 'Same as System'), Speaker the computer's"
-  echo "speakers (never 'OBS Monitoring (not for Zoom)'), and Original sound for musicians on; see the README."
+  echo "speakers (never 'OBS Monitoring (not for Zoom)'), and Original sound for musicians on; see docs/technical-reference.md."
 fi
 
 # Sacrament scene music: piano accompaniments of church hymns (free for home and church use),
@@ -431,18 +452,20 @@ as_user python3 -I "$SCRIPT_DIR/tools/make-sacrament-playlist.py" \
   --list "$SCRIPT_DIR/audio/sacrament-playlist.txt" --dir "$MUSIC_DIR" \
   || echo "WARNING: could not build the sacrament playlist; see tools/make-sacrament-playlist.py" >&2
 
-# Optional: pin OBS to the GNOME dock. Only possible where a schema override already
-# sets favorite-apps (the church autoinstall creates one).
+# OBS is always pinned to the GNOME dock: in the user's own favourites (tools/set-obs-dock-pin.py, which needs
+# their desktop session), and in the system default where a schema override sets one (the church autoinstall
+# creates it), for when nobody is logged in yet.
+echo "==> Pinning OBS to the GNOME dock"
+PIN_RT="/run/user/$(id -u "$TARGET_USER")"
+if [ -S "$PIN_RT/bus" ]; then
+  as_user env XDG_RUNTIME_DIR="$PIN_RT" DBUS_SESSION_BUS_ADDRESS="unix:path=$PIN_RT/bus" \
+    python3 -I "$SCRIPT_DIR/tools/set-obs-dock-pin.py" || echo "WARNING: could not pin OBS to the dock." >&2
+else
+  echo "$TARGET_USER is not logged in; OBS will be pinned on the next setup or update run from their session."
+fi
 if [ -f "$DOCK_SCHEMA_FILE" ] && ! grep -q 'com.obsproject.Studio.desktop' "$DOCK_SCHEMA_FILE"; then
-  if [ "$PIN_DOCK" = ask ] && [ -t 0 ]; then
-    read -r -p "Add OBS to the GNOME dock favourites for new sessions? [y/N] " reply
-    case "$reply" in [yY]*) PIN_DOCK=yes ;; *) PIN_DOCK=no ;; esac
-  fi
-  if [ "$PIN_DOCK" = yes ]; then
-    echo "==> Adding OBS to the GNOME dock favourites"
-    sed -i "s/'org.gnome.Terminal.desktop'\\]/'com.obsproject.Studio.desktop', 'org.gnome.Terminal.desktop']/" "$DOCK_SCHEMA_FILE"
-    glib-compile-schemas /usr/share/glib-2.0/schemas/
-  fi
+  sed -i "s/'org.gnome.Terminal.desktop'\\]/'com.obsproject.Studio.desktop', 'org.gnome.Terminal.desktop']/" "$DOCK_SCHEMA_FILE"
+  glib-compile-schemas /usr/share/glib-2.0/schemas/
 fi
 
 echo "==> Done. Start OBS from the app menu or: flatpak run $OBS_ID"

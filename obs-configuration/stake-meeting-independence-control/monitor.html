@@ -25,9 +25,13 @@
 <div id="bar"><span class="l">LIVE: <span id="tl">-</span></span><span class="p">PREVIEW: <span id="tp">-</span></span></div>
 <div id="status">Connecting...</div>
 <script>
-// ---- Settings: edit these to match the main OBS ----
+// ---- Settings ----
+// The main OBS's address, port and WebSocket password come from this source's Custom CSS box in OBS, e.g.
+//   :root { --main-obs: "192.168.108.4"; --main-obs-port: "4455"; --main-obs-password: "2ne2-14"; }
+// These are used for anything the Custom CSS leaves out.
 var HOST="192.168.108.4", PORT=4455, PASSWORD="2ne2-14";
-var LEFT_SCENE="Joystick Left", RIGHT_SCENE="Joystick Right"; // scenes on the main OBS that show each camera full-screen
+// Scenes on the main OBS that show each camera full-screen; the first name the main OBS has is used.
+var LEFT_SCENES=["Left Camera","Joystick Left"], RIGHT_SCENES=["Right Camera","Joystick Right"];
 var FPS=10, WIDTH=960, HEIGHT=540, QUALITY=60;                // screenshots per second per camera, size, JPEG quality
 // ----------------------------------------------------
 
@@ -60,6 +64,8 @@ function b64(a){return btoa(String.fromCharCode.apply(null,a))}
 function auth(pw,salt,chal){var sec=b64(sha256(utf8(pw+salt)));return b64(sha256(utf8(sec+chal)))}
 
 var ws,inflight=0,last={L:0,R:0},prog="",prev="",studio=true;
+var LEFT_SCENE=LEFT_SCENES[0],RIGHT_SCENE=RIGHT_SCENES[0];
+function pick(names,have){for(var i=0;i<names.length;i++)if(have.indexOf(names[i])>=0)return names[i];return names[0]}
 var $=function(i){return document.getElementById(i)};
 function side(name){if(!name)return null;if(/\bleft\b/i.test(name))return"L";if(/\bright\b/i.test(name))return"R";return null}
 function render(){
@@ -77,7 +83,18 @@ function tick(){
   if(!ws||ws.readyState!==1||inflight>0)return;
   inflight=2;shot(LEFT_SCENE,"shotL");shot(RIGHT_SCENE,"shotR");
 }
+// A setting from the Custom CSS (a CSS custom property on :root), without its quotes; "" when it is not set.
+function cssSetting(name){
+  var v=getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return v.replace(/^(["'])(.*)\1$/,"$2").trim();
+}
+function readSettings(){
+  HOST=cssSetting("--main-obs")||HOST;
+  PORT=parseInt(cssSetting("--main-obs-port"),10)||PORT;
+  PASSWORD=cssSetting("--main-obs-password")||PASSWORD;
+}
 function connect(){
+  readSettings();
   $("status").textContent="Connecting to "+HOST+":"+PORT+"...";
   ws=new WebSocket("ws://"+HOST+":"+PORT,"obswebsocket.json");
   ws.onmessage=function(e){
@@ -95,7 +112,10 @@ function connect(){
     }else if(m.op===7){
       var r=d.responseData;
       if(d.requestId==="studio"&&r){studio=r.studioModeEnabled;render()}
-      else if(d.requestId==="scenes"&&r){prog=r.currentProgramSceneName||"";prev=r.currentPreviewSceneName||"";render()}
+      else if(d.requestId==="scenes"&&r){
+        var have=(r.scenes||[]).map(function(s){return s.sceneName});
+        LEFT_SCENE=pick(LEFT_SCENES,have);RIGHT_SCENE=pick(RIGHT_SCENES,have);
+        prog=r.currentProgramSceneName||"";prev=r.currentPreviewSceneName||"";render()}
       else if(d.requestId==="shotL"||d.requestId==="shotR"){
         inflight=Math.max(0,inflight-1);
         if(d.requestStatus.result&&r){var k=d.requestId==="shotL"?"L":"R";$(k==="L"?"il":"ir").src=r.imageData;last[k]=Date.now()}else if(!d.requestStatus.result){console.log("screenshot failed",JSON.stringify(d.requestStatus))}
@@ -107,5 +127,8 @@ function connect(){
 }
 setInterval(tick,1000/FPS);
 setInterval(function(){if(ws&&ws.readyState===1){send("GetStudioModeEnabled",null,"studio");send("GetSceneList",null,"scenes")}},3000);
-connect();
+// OBS adds the Custom CSS once the page has loaded, so wait for it (up to 2 seconds) before the first connection.
+(function start(tries){
+  if(cssSetting("--main-obs")||tries>=20)connect();else setTimeout(function(){start(tries+1)},100);
+})(0);
 </script></body></html>
