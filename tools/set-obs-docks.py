@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
-"""Install the OBS window layout in configs/obs-layout.ini, which has the PTZ Controls dock in place.
+"""Install the OBS window layout in obs-configuration/obs-layout.ini, and open OBS in studio mode.
 
 Usage: set-obs-docks.py OBS_CONFIG_DIR   (e.g. ~/.var/app/com.obsproject.Studio/config/obs-studio)
-Keeps the layout already there if PTZ Controls is docked in it, so changes made in OBS survive a re-run.
-Also turns off OBS's popup about closing a dock.
+Every run puts the layout back (window, docks with PTZ Controls in place, side docks, vertical mixer) and turns
+studio mode on, so a dock closed or moved, or studio mode turned off, by accident is fixed by the next setup or
+update. Also turns off OBS's popup about closing a dock. Close OBS first: it writes its own layout when it exits.
+The Windows twin is set-obs-docks.ps1.
 """
-import base64
 import configparser
 import pathlib
 import sys
 
-LAYOUT = pathlib.Path(__file__).resolve().parent.parent / "configs" / "obs-layout.ini"
-PTZ_DOCK = "ptz-dock".encode("utf-16-be")  # names in Qt's saved window state are UTF-16
-DOCKED = 1  # the flags byte after the name: 1 visible, 2 floating
+LAYOUT = pathlib.Path(__file__).resolve().parent.parent / "obs-configuration" / "obs-layout.ini"
 
 
 def load(path):
@@ -29,25 +28,20 @@ def save(cp, path):
         cp.write(f, space_around_delimiters=False)
 
 
-def ptz_docked(dock_state):
-    state = base64.b64decode(dock_state)
-    i = state.find(PTZ_DOCK)
-    return i >= 0 and state[i + len(PTZ_DOCK)] == DOCKED
+def section(cp, name):
+    if not cp.has_section(name):
+        cp.add_section(name)
+    return cp[name]
 
 
 ini = pathlib.Path(sys.argv[1]) / "user.ini"
 user = load(ini)
 # Skip OBS's "You just closed a dockable window" popup.
-if not user.has_section("General"):
-    user.add_section("General")
-user["General"]["WarnedAboutClosingDocks"] = "true"
-if ptz_docked(user.get("BasicWindow", "DockState", fallback="")):
-    save(user, ini)
-    print("PTZ Controls is already docked; leaving the OBS layout alone.")
-    sys.exit()
-
-if not user.has_section("BasicWindow"):
-    user.add_section("BasicWindow")
-user["BasicWindow"].update(load(LAYOUT)["BasicWindow"])
+section(user, "General")["WarnedAboutClosingDocks"] = "true"
+window = section(user, "BasicWindow")
+window.update(load(LAYOUT)["BasicWindow"])
+window.pop("ChurchLayout", None)  # left by an older version of this script, which installed each layout only once
+# Studio mode on. OBS saves the mode on exit, so this is only the starting state; the next run sets it again.
+window["PreviewProgramMode"] = "true"
 save(user, ini)
-print(f"OBS layout with PTZ Controls docked installed in {ini}")
+print(f"OBS layout (PTZ Controls docked) installed in {ini}; studio mode on")

@@ -21,8 +21,9 @@ $ProgressPreference = 'SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 $Page = 'https://www.churchofjesuschrist.org/media/music/songs/{0}?lang=eng'
-# The page lists every recording; the piano accompaniment is the AUDIO_ACCOMPANIMENT one.
-$Mp3Re = '"assetType":"AUDIO_ACCOMPANIMENT","distributionUrl":"([^"]+\.mp3)"'
+# The page lists every recording; the piano accompaniment is the AUDIO_ACCOMPANIMENT one. Most hymns have it as
+# an MP3; some newer ones (e.g. Bread of Life, Living Water) only as an M4A, which is converted to MP3.
+$AccompRe = '"assetType":"AUDIO_ACCOMPANIMENT","distributionUrl":"([^"]+\.(mp3|m4a))"'
 
 $out = Join-Path $Dir 'sacrament-playlist.mp3'
 $hymnDir = Join-Path $Dir 'hymns'
@@ -40,12 +41,22 @@ foreach ($slug in $slugs) {
     if (-not (Test-Path $dest) -or (Get-Item $dest).Length -eq 0) {
         try {
             $html = (Invoke-WebRequest ($Page -f $slug) -UserAgent 'Mozilla/5.0' -UseBasicParsing).Content
-            if ($html -notmatch $Mp3Re) { throw 'no piano accompaniment listed on the page' }
-            Invoke-WebRequest $Matches[1] -OutFile "$dest.part" -UserAgent 'Mozilla/5.0' -UseBasicParsing
+            $found = @{}
+            foreach ($m in [regex]::Matches($html, $AccompRe)) { $found[$m.Groups[2].Value] = $m.Groups[1].Value }
+            if ($found.Count -eq 0) { throw 'no piano accompaniment listed on the page' }
+            if ($found.ContainsKey('mp3')) {
+                Invoke-WebRequest $found['mp3'] -OutFile "$dest.part" -UserAgent 'Mozilla/5.0' -UseBasicParsing
+            } else {
+                # Convert the M4A to an MP3 like the others, so the hymns folder holds one format.
+                Invoke-WebRequest $found['m4a'] -OutFile "$dest.part.m4a" -UserAgent 'Mozilla/5.0' -UseBasicParsing
+                & $Ffmpeg -y -loglevel error -i "$dest.part.m4a" -vn -c:a libmp3lame -q:a 4 -f mp3 "$dest.part"
+                if ($LASTEXITCODE -ne 0) { throw "ffmpeg could not convert the M4A (exit $LASTEXITCODE)" }
+                Remove-Item "$dest.part.m4a" -ErrorAction SilentlyContinue
+            }
             Move-Item "$dest.part" $dest -Force
             Write-Host "downloaded $slug"
         } catch {
-            Remove-Item "$dest.part" -ErrorAction SilentlyContinue
+            Remove-Item "$dest.part", "$dest.part.m4a" -ErrorAction SilentlyContinue
             Write-Warning "skipping ${slug}: $_"   # one bad hymn must not lose the others
             continue
         }
