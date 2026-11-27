@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Icon for the "OBS Configuration Reset" button (tools/obs-config-reset-button/button.sh); setup installs it with the app-menu entry. -->
+  <rect x="2" y="2" width="60" height="60" rx="12" fill="#2f6fd6"/>
+  <g fill="#ffffff" font-family="Ubuntu, 'DejaVu Sans', sans-serif" font-weight="700" font-size="12.5" text-anchor="middle">
+    <text x="32" y="23">OBS</text>
+    <text x="32" y="38">CONFIG</text>
+    <text x="32" y="53">RESET</text>
+  </g>
+</svg>

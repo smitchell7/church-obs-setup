@@ -16,10 +16,13 @@ Usage (as the person who uses OBS, not with sudo; close OBS first):
 - Puts back the OBS window layout (obs-configuration/obs-layout.ini)
   every time, and turns studio mode on (tools/set-obs-docks.py).
 - Pins OBS to the GNOME dock if it isn't (tools/set-obs-dock-pin.py).
+- Only where OBS runs under X11 (a Flatpak override): starts OBS maximized through tools/obs-launch.sh
+  (tools/set-obs-launcher.py). On other computers this changes nothing.
 - Points OBS's audio monitoring at the speaker that feeds Zoom (tools/set-obs-monitor.py) and turns on the
   WebSocket server, keeping its password (tools/set-obs-websocket.py).
 - Asks which collection OBS opens on (the same menu as the setup script), with the current one marked; Enter keeps
   it. --default answers up front. Run without a terminal to ask in, it leaves OBS's current one.
+- --list only lists the collections (for the OBS Configuration Reset button, tools/obs-config-reset-button/button.sh).
 """
 import argparse
 import json
@@ -37,9 +40,11 @@ SCENES = OBS_DIR / "basic" / "scenes"
 
 parser = argparse.ArgumentParser(description="Update just the OBS scene collections from this repo.")
 parser.add_argument("--default", help="the collection OBS opens on (a folder name in obs-configuration/)")
+parser.add_argument("--list", action="store_true",
+                    help="only list the collections, in menu order, as FOLDER<tab>NAME<tab>current-or-empty, then stop")
 args = parser.parse_args()
 
-if subprocess.run(["pgrep", "-f", "com.obsproject.Studio"], capture_output=True).returncode == 0:
+if not args.list and subprocess.run(["pgrep", "-f", "com.obsproject.Studio"], capture_output=True).returncode == 0:
     sys.exit("Close OBS first, then run this again.")
 # Which collection OBS opens on: the same menu, in the same order, as setup-obs-flatpak.sh.
 found = sorted(p.name for p in (REPO / "obs-configuration").iterdir() if p.is_dir())
@@ -54,6 +59,13 @@ if (OBS_DIR / "user.ini").exists():
             current_file = line.split("=", 1)[1].strip()
             break
 current = current_file.removesuffix(".json") if current_file.removesuffix(".json") in names else ""
+if args.list:
+    # For the OBS Configuration Reset button (tools/obs-config-reset-button/button.sh), which asks in a window instead.
+    for config, n in zip(configs, names):
+        collection = next(config.glob("*.json"), None)
+        title = json.loads(collection.read_text(encoding="utf-8")).get("name", n) if collection else n
+        print(f"{n}\t{title}\t{'current' if n == current else ''}")
+    sys.exit(0)
 if args.default:
     if args.default not in names:
         sys.exit(f"No collection named {args.default} (have: {', '.join(names)})")
@@ -161,6 +173,8 @@ env = {k: v for k, v in os.environ.items() if k != "OBS_WEBSOCKET_PASSWORD"}
 subprocess.run([sys.executable, "-I", str(REPO / "tools" / "set-obs-websocket.py"), str(OBS_DIR)], check=True, env=env)
 # OBS pinned to the GNOME dock (put back if someone unpinned it).
 subprocess.run([sys.executable, "-I", str(REPO / "tools" / "set-obs-dock-pin.py")], check=False)
+# Only where OBS runs under X11: start it maximized through tools/obs-launch.sh (changes nothing elsewhere).
+subprocess.run([sys.executable, "-I", str(REPO / "tools" / "set-obs-launcher.py")], check=False)
 
 if args.default:
     collection = next((REPO / "obs-configuration" / args.default).glob("*.json"))

@@ -4,7 +4,7 @@
   (Windows twin of set-obs-docks.py.)
 
 .DESCRIPTION
-  Every run puts the layout back (window, docks with PTZ Controls in place, side docks, vertical mixer), so a
+  Every run puts the layout back (docks with PTZ Controls in place, side docks, vertical mixer; not the window's position or size, which stays as each computer has it), so a
   dock closed or moved, or studio mode turned off, by accident is fixed by the next setup or update: it turns
   studio mode on every time. Also turns off OBS's popup about closing a dock. Close OBS first: it writes its own
   layout when it exits.

@@ -118,7 +118,16 @@ dsk_lookup
 
 # What is missing? Each piece is installed when it is missing; --install also updates what is there.
 NEED_APT=0 NEED_OBS=0 NEED_DISTROAV=0 NEED_DSK=0 NEED_PTZ=0 NEED_NDI=0
-for cmd in flatpak curl pactl ffmpeg gcc; do command -v "$cmd" >/dev/null || NEED_APT=1; done
+for cmd in flatpak curl pactl ffmpeg gcc git zenity; do command -v "$cmd" >/dev/null || NEED_APT=1; done
+# OBS converted to X11 (a Flatpak override with sockets=x11;!wayland or QT_QPA_PLATFORM=xcb): only there, OBS is
+# started through tools/obs-launch.sh, which maximizes it and needs wmctrl. Other computers get neither.
+OBS_X11=no
+if command -v flatpak >/dev/null \
+    && { flatpak override --show "$OBS_ID"; as_user flatpak override --user --show "$OBS_ID"; } 2>/dev/null \
+       | grep -qE '^sockets=.*!wayland|^QT_QPA_PLATFORM=xcb'; then
+  OBS_X11=yes
+  command -v wmctrl >/dev/null || NEED_APT=1
+fi
 python3 -c 'import PIL' 2>/dev/null || NEED_APT=1
 modinfo v4l2loopback >/dev/null 2>&1 || NEED_APT=1   # OBS Virtual Camera
 if command -v flatpak >/dev/null; then
@@ -148,7 +157,7 @@ want() { [ "$INSTALL" = yes ] || [ "$1" = 1 ]; }
 
 echo "==> Checking the installed software"
 status() { if [ "$2" = 1 ]; then echo "  $1: MISSING"; else echo "  $1: installed"; fi; }
-status "system tools (flatpak, curl, pactl, ffmpeg, gcc, python3-pil, v4l2loopback)" "$NEED_APT"
+status "system tools (flatpak, curl, pactl, ffmpeg, gcc, git, zenity, python3-pil, v4l2loopback)" "$NEED_APT"
 status "OBS Studio" "$NEED_OBS"
 status "DistroAV (NDI)" "$NEED_DISTROAV"
 if [ "$DSK_SOURCE" = unknown ]; then
@@ -168,7 +177,8 @@ if [ "$INSTALL" = yes ]; then echo "  --install given: installing and updating e
 if want "$NEED_APT"; then
   echo "==> [1/6] Installing system tools"
   apt-get update -y
-  apt-get install -y flatpak python3-pil curl pulseaudio-utils ffmpeg gcc v4l2loopback-dkms
+  apt-get install -y flatpak python3-pil curl pulseaudio-utils ffmpeg gcc git zenity v4l2loopback-dkms \
+    $([ "$OBS_X11" = yes ] && echo wmctrl)
 fi
 if [ "$INSTALL" = yes ] || [ "$NEED_OBS$NEED_DISTROAV$NEED_DSK$NEED_PTZ$NEED_NDI" != 00000 ]; then
   flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
@@ -452,9 +462,41 @@ as_user python3 -I "$SCRIPT_DIR/tools/make-sacrament-playlist.py" \
   --list "$SCRIPT_DIR/audio/sacrament-playlist.txt" --dir "$MUSIC_DIR" \
   || echo "WARNING: could not build the sacrament playlist; see tools/make-sacrament-playlist.py" >&2
 
-# OBS is always pinned to the GNOME dock: in the user's own favourites (tools/set-obs-dock-pin.py, which needs
-# their desktop session), and in the system default where a schema override sets one (the church autoinstall
-# creates it), for when nobody is logged in yet.
+# The "OBS Configuration Reset" button (tools/obs-config-reset-button/button.sh): runs as the user, downloads the latest version
+# of their copy of this repository with git and runs tools/obs-config-update.py. It needs a copy the user owns, so
+# that git can update it without sudo: this one when it is in their home folder (~/church-obs-setup), else
+# ~/church-obs-setup if it exists (e.g. on computers set up by the autoinstall, which runs from /opt).
+BUTTON_DIR=
+case "$SCRIPT_DIR/" in "$TARGET_HOME"/*) BUTTON_DIR=$SCRIPT_DIR ;; esac
+[ -n "$BUTTON_DIR" ] || { [ -d "$TARGET_HOME/church-obs-setup/.git" ] && BUTTON_DIR="$TARGET_HOME/church-obs-setup"; }
+if [ -n "$BUTTON_DIR" ] && [ -f "$BUTTON_DIR/tools/obs-config-reset-button/button.sh" ]; then
+  echo "==> Adding the OBS Configuration Reset button (runs $BUTTON_DIR/tools/obs-config-reset-button/button.sh)"
+  BUTTON_ICON=/usr/share/icons/hicolor/scalable/apps/church-obs-config-update.svg
+  install -D -m 644 "$SCRIPT_DIR/tools/obs-config-reset-button/icon.svg" "$BUTTON_ICON"
+  command -v gtk-update-icon-cache >/dev/null && gtk-update-icon-cache -q -t /usr/share/icons/hicolor || true
+  cat > /usr/share/applications/church-obs-config-update.desktop <<EOF
+[Desktop Entry]
+Type=Application
+Name=OBS Configuration Reset
+Comment=Get the latest scene collections and put the OBS configuration back to the church setup
+Exec=bash "$BUTTON_DIR/tools/obs-config-reset-button/button.sh"
+Icon=$BUTTON_ICON
+Terminal=false
+Categories=AudioVideo;
+EOF
+else
+  rm -f /usr/share/applications/church-obs-config-update.desktop
+  echo "WARNING: no copy of this repository in $TARGET_HOME (clone it to ~/church-obs-setup and run this again)," \
+    "so the OBS Configuration Reset button was not added." >&2
+fi
+
+# OBS is always pinned to the GNOME dock, with the OBS Configuration Reset button next to it: in the user's own
+# favourites (tools/set-obs-dock-pin.py, which needs their desktop session), and in the system default where a
+# schema override sets one (the church autoinstall creates it), for when nobody is logged in yet.
+# On computers where OBS runs under X11 only: start OBS maximized, through tools/obs-launch.sh
+# (tools/set-obs-launcher.py; on other computers it changes nothing).
+as_user python3 -I "$SCRIPT_DIR/tools/set-obs-launcher.py" || echo "WARNING: could not set up the OBS launcher." >&2
+
 echo "==> Pinning OBS to the GNOME dock"
 PIN_RT="/run/user/$(id -u "$TARGET_USER")"
 if [ -S "$PIN_RT/bus" ]; then
@@ -463,8 +505,13 @@ if [ -S "$PIN_RT/bus" ]; then
 else
   echo "$TARGET_USER is not logged in; OBS will be pinned on the next setup or update run from their session."
 fi
-if [ -f "$DOCK_SCHEMA_FILE" ] && ! grep -q 'com.obsproject.Studio.desktop' "$DOCK_SCHEMA_FILE"; then
-  sed -i "s/'org.gnome.Terminal.desktop'\\]/'com.obsproject.Studio.desktop', 'org.gnome.Terminal.desktop']/" "$DOCK_SCHEMA_FILE"
+if [ -f "$DOCK_SCHEMA_FILE" ]; then
+  DOCK_APPS=(com.obsproject.Studio.desktop)
+  [ -f /usr/share/applications/church-obs-config-update.desktop ] && DOCK_APPS+=(church-obs-config-update.desktop)
+  for app in "${DOCK_APPS[@]}"; do
+    grep -q "$app" "$DOCK_SCHEMA_FILE" \
+      || sed -i "s/'org.gnome.Terminal.desktop'\\]/'$app', 'org.gnome.Terminal.desktop']/" "$DOCK_SCHEMA_FILE"
+  done
   glib-compile-schemas /usr/share/glib-2.0/schemas/
 fi
 

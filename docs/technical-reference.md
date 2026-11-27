@@ -52,6 +52,18 @@ What it sets up:
 - **Window layout and Studio Mode:** `obs-configuration/obs-layout.ini` (`tools/set-obs-docks.py`): the docks with
   PTZ Controls in place (Downstream Keyer closed; open it from the Docks menu), side docks and the vertical mixer.
   Every run puts the layout back and turns Studio Mode on, so a dock closed or moved by accident is fixed.
+- **Starting OBS maximized, on computers converted to X11 only.** Where the OBS Flatpak has an override that
+  makes it run under X11 (`sockets=x11;!wayland` or `QT_QPA_PLATFORM=xcb`; the Independence building uses X11 so
+  that OBS's full-screen projector works there),
+  the first time OBS opens after a computer restart, its window doesn't open maximized, although OBS saved it
+  maximized (seen on the three-screen Independence computer; harmanmj/church-obs-setup#4). This launcher is the
+  fix; it is to be confirmed with the next update on that computer.
+  There, setup installs `wmctrl` and `tools/set-obs-launcher.py` writes the user's own copy of OBS's app-menu
+  entry (`~/.local/share/applications/com.obsproject.Studio.desktop`, so the dock icon, the menu and search use
+  it) to start OBS through `tools/obs-launch.sh`, which waits for OBS's window and maximizes it where it is. An
+  autostart entry for OBS, if there is one, is pointed at it too, keeping its original command so it can be put
+  back. On every other computer nothing is installed or changed, and a launcher left from an earlier run (if the
+  computer went back to Wayland) is removed. The configuration update does the same.
 - **Video**, on a first setup only: a 1920x1080 canvas and output at 30 fps, recording quality "Same as stream",
   and OBS's Auto-Configuration Wizard skipped (`tools/set-obs-video.py` sets the video again).
 - **Audio and Zoom**, **Virtual Camera** and **Remote control** (below).
@@ -87,6 +99,28 @@ It keeps:
   `-Default FOLDER`).
 - **The WebSocket password.**
 - **The video settings**, which only the setup script sets, on a first setup.
+
+**The OBS Configuration Reset button (Ubuntu).** `tools/obs-config-reset-button/button.sh` runs the update from the app menu or
+the dock, as the user, without a password or a terminal (the windows are zenity dialogs):
+
+1. It does nothing, with a message, when OBS is open, and a second click while it runs is ignored.
+2. It downloads the latest version of its own copy of this repo (`git fetch`, then a fast-forward of the branch's
+   upstream). With no network, it carries on with the version already there. If files in the copy were edited
+   by hand and the update changes them too, so the download can't apply, it asks: "Set aside and update" runs
+   `git stash` (the edits are kept, not deleted) and applies the update; "Keep them, don't update" carries on
+   with the version already there. Hand edits to files the update doesn't touch don't stop it, so there's no
+   question then. Changes made in OBS never count: OBS keeps its scenes in its own folder.
+3. It asks which scene collection OBS opens on, in a list with the current one selected (the same list and order
+   as the terminal menu, from `obs-config-update.py --list`). Cancel stops without changing anything.
+4. It runs `obs-config-update.py --default FOLDER` in the background and shows the result, or the details when
+   something failed. The output of the last run is in `~/.cache/church-obs-config-update.log`.
+
+The setup script installs `git` and `zenity`, writes the app-menu entry
+(`/usr/share/applications/church-obs-config-update.desktop`, with the icon `tools/obs-config-reset-button/icon.svg`) and pins it next to OBS (`tools/set-obs-dock-pin.py`,
+which the update runs too). The button runs from the user's own copy of the repo, so git can update it without
+sudo: the copy setup runs from when it is in the user's home folder, else `~/church-obs-setup` if it exists. Where
+there is neither (a computer set up only by the autoinstall, which runs from `/opt/church-obs-setup`), setup says
+so and doesn't add the button until `~/church-obs-setup` is cloned.
 
 On Ubuntu it also builds any missing notch filter plugins and makes sure the OBS Flatpak can find them. On
 Windows it copies them to `C:\Program Files\VSTPlugins` when run as administrator, and otherwise prints the

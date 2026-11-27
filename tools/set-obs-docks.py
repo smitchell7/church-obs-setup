@@ -2,7 +2,7 @@
 """Install the OBS window layout in obs-configuration/obs-layout.ini, and open OBS in studio mode.
 
 Usage: set-obs-docks.py OBS_CONFIG_DIR   (e.g. ~/.var/app/com.obsproject.Studio/config/obs-studio)
-Every run puts the layout back (window, docks with PTZ Controls in place, side docks, vertical mixer) and turns
+Every run puts the layout back (docks with PTZ Controls in place, side docks, vertical mixer; not the window's position or size, which stays as each computer has it) and turns
 studio mode on, so a dock closed or moved, or studio mode turned off, by accident is fixed by the next setup or
 update. Also turns off OBS's popup about closing a dock. Close OBS first: it writes its own layout when it exits.
 The Windows twin is set-obs-docks.ps1.

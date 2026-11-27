@@ -20,12 +20,12 @@
 # First Time Ubuntu Install
   1. Open Terminal
   2. Run the following, then type the number of the scene collection OBS should open on when it asks
-    ```terminal
-    cd ~
-    git clone https://github.com/smitchell7/church-obs-setup.git
-    cd ~/church-obs-setup
-    sudo ./setup-obs-flatpak.sh
-    ```
+     ```terminal
+     cd ~
+     git clone https://github.com/smitchell7/church-obs-setup.git
+     cd ~/church-obs-setup
+     sudo ./setup-obs-flatpak.sh
+     ```
   Clone it **without** sudo, so the folder belongs to you and later updates need no sudo for `git pull`.
 
 # Running Updates on an existing installation
@@ -41,7 +41,16 @@
     sudo chown -R $USER:$USER ~/church-obs-setup
     ```
 
+# OBS Configuration Reset Button (no terminal or password needed)
+The setup script adds an **OBS Configuration Reset** button to the app menu and pins it to the dock next to OBS. One click does the same as the terminal steps below: it downloads the latest version of `~/church-obs-setup` from GitHub, asks in a window which scene collection OBS should open on (the current one is already selected), and puts the scene collections and OBS configuration back to the defaults. The cameras, microphone and NDI sources picked in OBS are kept. It needs no sudo password and no terminal, and it never installs or updates software.
+* Close OBS first. If OBS is open, the button says so and does nothing.
+* If something goes wrong, the button shows the details. The output of the last run is in `~/.cache/church-obs-config-update.log`.
+* It updates the copy in `~/church-obs-setup`, on the branch it is on.
+* If files in `~/church-obs-setup` were edited by hand (uncommon) and that stops the download, it asks whether to **set them aside** (`git stash`: they are kept, not deleted, and `git stash list` shows them) and update, or keep them and carry on with the version already there. Changes made in OBS never cause this: OBS keeps its scenes in its own folder.
+
 # Updating Only the Scene Collections and OBS Configuration
+The **OBS Configuration Reset** button does this in one click. To do it in a terminal instead:
+
 Use this when only the scene collections have changed. It installs the newest version of every scene collection in `obs-configuration/` without running the rest of the setup (no software is installed). The devices already picked in OBS (the cameras, the USB Audio microphone and the FreeShow NDI sources) are kept, and each collection it replaces is saved as a `.bak` file. It also builds the notch filter plugins used on USB Audio if they are missing, and makes sure OBS can find them (no sudo needed). It points OBS's audio monitoring at the speaker that feeds Zoom, and turns on OBS's WebSocket server for remote control (keeping its password). The video settings are left as they are. It puts back the OBS window layout (`obs-configuration/obs-layout.ini`), so docks closed or moved by accident come back. It turns Studio Mode on. Close OBS, then run the following in a normal terminal, without sudo:
 * **Update the Scene Collections** (asks which scene collection OBS should open on; press Enter to keep the current one)
     ```terminal

@@ -82,6 +82,6 @@ The camera addresses are ordinary PTZ device settings and can be changed in OBS.
 
 ## Window layout (`obs-layout.ini`)
 
-The OBS window layout that setup and the collections update install, captured from the Ubuntu test VM (the same screen size as the church laptops): Scenes, Sources, Audio Mixer, PTZ Controls, Controls and Transitions docked, side docks and the vertical mixer. Downstream Keyer and Stats are closed; open Downstream Keyer from the **Docks** menu to use the lower thirds.
+The OBS window layout that setup and the collections update install, captured from the Ubuntu test VM: Scenes, Sources, Audio Mixer, PTZ Controls, Controls and Transitions docked, side docks and the vertical mixer. Downstream Keyer and Stats are closed; open Downstream Keyer from the **Docks** menu to use the lower thirds.
 
-Every setup and update puts the layout back, so docks closed or moved by accident are fixed. Both also turn Studio Mode on every time. To change the layout: arrange OBS, close it, and copy the same lines from `[BasicWindow]` in OBS's `user.ini` into this file.
+It sets the docks, not the window's position or size, so OBS stays on whichever screen it was on, at the size it was, on each computer (some have more than one screen). Every setup and update puts the layout back, so docks closed or moved by accident are fixed. Both also turn Studio Mode on every time. To change the layout: arrange OBS, close it, and copy the same lines from `[BasicWindow]` in OBS's `user.ini` into this file.

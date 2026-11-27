@@ -20,11 +20,11 @@
 # First Time Windows Install
   1. Open **PowerShell as administrator** (Start, type `powershell`, right-click > Run as administrator)
   2. Run the following, then type the number of the scene collection OBS should open on when it asks
-    ```powershell
-    cd $env:TEMP
-    irm https://raw.githubusercontent.com/smitchell7/church-obs-setup/HEAD/setup-obs-windows.ps1 -OutFile setup-obs-windows.ps1
-    powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1
-    ```
+     ```powershell
+     cd $env:TEMP
+     irm https://raw.githubusercontent.com/smitchell7/church-obs-setup/HEAD/setup-obs-windows.ps1 -OutFile setup-obs-windows.ps1
+     powershell -ExecutionPolicy Bypass -File .\setup-obs-windows.ps1
+     ```
 
 # Running Updates on an existing installation
 * **Update** (asks which scene collection OBS should open on; press Enter to keep the current one). The setup script gets the latest version itself: it switches `c:\church-obs-setup` to `main` and pulls before it runs, so there is no `git pull` step here.
